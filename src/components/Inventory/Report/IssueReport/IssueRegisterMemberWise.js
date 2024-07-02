@@ -159,6 +159,7 @@ const IssueRegisterMemberWise = () => {
                                     <Form.Control
                                         type="date"
                                         value={endDate}
+                                        min={startDate} 
                                         onChange={(e) => setEndDate(e.target.value)}
                                     />
                                 </Form.Group>

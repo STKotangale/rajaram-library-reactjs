@@ -9,37 +9,35 @@ import 'react-toastify/dist/ReactToastify.css';
 import './AuthCSS/User.css';
 
 const User = () => {
-    const { accessToken } = useAuth();
-    const BaseURL = process.env.REACT_APP_BASE_URL;
-
-    // State for managing users and filtered data
+    //get
     const [users, setUsers] = useState([]);
+    //search
     const [filtered, setFiltered] = useState([]);
     const [dataQuery, setDataQuery] = useState("");
-
-    // State for add user modal
+    useEffect(() => {
+        setFiltered(users.filter(member =>
+            member.username.toLowerCase().includes(dataQuery.toLowerCase())
+        ));
+        setCurrentPage(1);
+    }, [dataQuery]);
+    //add
     const [showAddUserModal, setShowAddUserModal] = useState(false);
     const [newUserName, setNewUserName] = useState('');
     const [newUserEmail, setNewUserEmail] = useState('');
     const [newMobileNumber, setNewMobileNumber] = useState('');
     const [newUserPassword, setNewUserPassword] = useState('');
-
-    // State for edit user modal
+    //edit
     const [showEditUserModal, setShowEditUserModal] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
-
-    // State for delete confirmation modal
+    //delete
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-
-    // State for view user modal
+    // view
     const [showViewModal, setShowViewModal] = useState(false);
     const [viewUser, setViewUser] = useState(null);
+    //auth
+    const { accessToken } = useAuth();
+    const BaseURL = process.env.REACT_APP_BASE_URL;
 
-    // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
-    const perPage = 8;
-
-    // Fetch users on component mount
     useEffect(() => {
         fetchUsers();
     }, []);
@@ -81,7 +79,7 @@ const User = () => {
                 toast.error('Mobile number must be exactly 10 digits.');
                 return;
             }
-              if (newUserPassword.length < 6) {
+            if (newUserPassword.length < 6) {
                 toast.error('Password must be at least 6 characters.');
                 return;
             }
@@ -189,13 +187,16 @@ const User = () => {
         }
     };
 
-    // Show view modal with user details
+    // view
     const handleShowViewModal = (user) => {
         setViewUser(user);
         setShowViewModal(true);
     };
 
-    // Pagination functions
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const perPage = 8;
     const handleNextPage = () => {
         setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
     };
@@ -208,8 +209,6 @@ const User = () => {
     const handleLastPage = () => {
         setCurrentPage(totalPages);
     };
-
-    // Calculate pagination variables
     const indexOfLastBookType = currentPage * perPage;
     const indexOfNumber = indexOfLastBookType - perPage;
     const totalPages = Math.ceil(filtered.length / perPage);

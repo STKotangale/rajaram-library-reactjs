@@ -142,6 +142,7 @@ const PermanentMember = () => {
             toast.success('Permanent member added successfully.');
             setShowAddPermanentMemberModal(false);
             resetFormFields();
+            fetchPermanentMembers();
         } catch (error) {
             console.error(error);
             toast.error('Error adding permanent member. Please try again later.');
@@ -195,6 +196,7 @@ const PermanentMember = () => {
             setPermanentMember(updatedPermanentMembers);
             toast.success('Permanent member edited successfully.');
             setShowEditPermanentMemberModal(false);
+            fetchPermanentMembers();
         } catch (error) {
             console.error(error);
             toast.error('Error editing permanent member. Please try again later.');
