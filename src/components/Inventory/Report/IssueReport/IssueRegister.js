@@ -106,6 +106,7 @@ const IssueRegister = () => {
                                     <Form.Control
                                         type="date"
                                         value={endDate}
+                                        min={startDate} 
                                         onChange={(e) => setEndDate(e.target.value)}
                                         required
                                     />

@@ -437,6 +437,7 @@ const PurchaseReturn = () => {
                                     type="date"
                                     value={endDate}
                                     onChange={handleEndDateChange}
+                                    min={startDate} 
                                     className="custom-date-picker small-input border"
                                 />
                             </InputGroup>
