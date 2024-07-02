@@ -129,8 +129,8 @@ const IssueReturn = () => {
                 ...issueItem,
                 MemberFullName: `${issueItem.firstname} ${issueItem.middlename} ${issueItem.lastname}`
             }));
-            const sortedData = updatedData.sort((a, b) => a.MemberFullName.localeCompare(b.MemberFullName));
-            setIssueReturn(sortedData || []);
+            // const sortedData = updatedData.sort((a, b) => a.MemberFullName.localeCompare(b.MemberFullName));
+            setIssueReturn(updatedData || []);
         } catch (error) {
             console.error('Error fetching issues:', error);
             toast.error('Error fetching issues. Please try again later.');

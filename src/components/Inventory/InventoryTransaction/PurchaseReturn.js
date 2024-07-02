@@ -113,8 +113,8 @@ const PurchaseReturn = () => {
                 return;
             }
             const data = responseData.data;
-            const sortedData = data.sort((a, b) => a.ledgerName.localeCompare(b.ledgerName));
-            setPurchaseReturn(sortedData || []);
+            // const sortedData = data.sort((a, b) => a.ledgerName.localeCompare(b.ledgerName));
+            setPurchaseReturn(data || []);
         } catch (error) {
             console.error('Error fetching purchase returns:', error);
             toast.info('No sessions found for the provided year range');

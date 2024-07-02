@@ -6,18 +6,18 @@ import { useAuth } from '../../Auth/AuthProvider';
 import { ChevronLeft, ChevronRight, Eye, PencilSquare, Trash } from 'react-bootstrap-icons';
 
 const MembershipFees = () => {
+    //get all
     const [memberData, setMemberData] = useState([]);
+    //get member 
     const [generalMember, setGeneralMember] = useState([]);
     const [selectedMemberName, setSelectedMemberName] = useState('');
     const [selectedMemberId, setSelectedMemberId] = useState('');
+    //get fees data
+    const [feesData, setFeesData] = useState([]);
+    // get invoice number
     const [invoiceNumber, setInvoiceNumber] = useState('');
-
+    //add
     const [showAddModal, setShowAddModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [deleteId, setDeleteId] = useState(null);
-    const [showViewModal, setShowViewModal] = useState(false);
-    const [viewData, setViewData] = useState({});
     const [formData, setFormData] = useState({
         invoiceDate: new Date().toISOString().substr(0, 10),
         selectedMemberId: "",
@@ -27,9 +27,12 @@ const MembershipFees = () => {
         chequeDate: "",
         monthlyDescription: ""
     });
+    const [selectedMemberLibNo, setSelectedMemberLibNo] = useState('');
+    //edit
+    const [showEditModal, setShowEditModal] = useState(false);
     const [editData, setEditData] = useState({
         membershipId: "",
-        invoiceDate: new Date().toISOString().substr(0, 10), // default to today's date
+        invoiceDate: new Date().toISOString().substr(0, 10),
         selectedMemberName: "",
         selectedMemberId: "",
         feeType: "",
@@ -38,9 +41,13 @@ const MembershipFees = () => {
         chequeDate: "",
         monthlyDescription: ""
     });
-
-    const [feesData, setFeesData] = useState([]);
-
+    //delete
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+    //view
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [viewData, setViewData] = useState({});
+    //auth
     const { username, accessToken } = useAuth();
     const BaseURL = process.env.REACT_APP_BASE_URL;
 
@@ -51,6 +58,7 @@ const MembershipFees = () => {
         fetchFeesData();
     }, [username, accessToken]);
 
+    //get membership data
     const fetchMemberData = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/membership-fees`, {
@@ -61,17 +69,12 @@ const MembershipFees = () => {
             if (!response.ok) {
                 throw new Error(`Error fetching member data: ${response.statusText}`);
             }
-            // const data = await response.json();
-            // setMemberData(data.map(member => ({
-            //     ...member,
-            //     fullName: `${member.firstName} ${member.middleName} ${member.lastName}`
-            // })));
             const data = await response.json();
             const sortedData = data.map(member => ({
                 ...member,
                 fullName: `${member.firstName} ${member.middleName} ${member.lastName}`
             })).sort((a, b) => a.fullName.localeCompare(b.fullName));
-    
+
             setMemberData(sortedData);
         } catch (error) {
             console.error(error);
@@ -79,7 +82,7 @@ const MembershipFees = () => {
         }
     };
 
-    // get  no.
+    // get  invoice number
     const fetchLatestNo = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/membership-fees/nextInvoiceMembershipNo`, {
@@ -98,6 +101,7 @@ const MembershipFees = () => {
         }
     };
 
+    //get general number
     const fetchGeneralMembers = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/general-members`, {
@@ -119,6 +123,7 @@ const MembershipFees = () => {
         }
     };
 
+    //get fees data
     const fetchFeesData = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/fees`, {
@@ -137,6 +142,7 @@ const MembershipFees = () => {
         }
     };
 
+    //input change for add modal
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevState => ({
@@ -145,12 +151,26 @@ const MembershipFees = () => {
         }));
     };
 
-    const handleEditInputChange = (e) => {
-        const { name, value } = e.target;
-        setEditData(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
+
+
+    const formatDate = (date) => {
+        if (!date) return '';
+        const [year, month, day] = date.split('-');
+        return `${day}-${month}-${year}`;
+    };
+
+    // Handle member change add modal
+    const handleMemberChange = (e) => {
+        const selectedName = e.target.value;
+        setSelectedMemberName(selectedName);
+        const selectedMember = generalMember.find(member => member.fullName === selectedName);
+        if (selectedMember) {
+            setSelectedMemberId(selectedMember.memberId);
+            setSelectedMemberLibNo(selectedMember.libGenMembNo);
+        } else {
+            setSelectedMemberId('');
+            setSelectedMemberLibNo('');
+        }
     };
 
     const resetField = () => {
@@ -167,27 +187,72 @@ const MembershipFees = () => {
         });
     };
 
-    const formatDate = (date) => {
-        if (!date) return '';
-        const [year, month, day] = date.split('-');
-        return `${day}-${month}-${year}`;
+    //post api
+    const handleAddSubmit = async () => {
+        const formattedInvoiceDate = formatDate(formData.invoiceDate);
+        const formattedChequeDate = formData.chequeDate ? formatDate(formData.chequeDate) : null;
+        const totalFees = feesData.reduce((total, fee) => total + parseFloat(fee.feesAmount || 0), 0);
+        const membershipFeesDetails = feesData.map(fee => ({
+            feesIdF: fee.feesId,
+            feesAmount: parseFloat(fee.feesAmount || 0)
+        }));
+        const payload = {
+            memInvoiceNo: invoiceNumber,
+            memInvoiceDate: formattedInvoiceDate,
+            memberIdF: selectedMemberId,
+            feesType: formData.feeType === "Cash" ? "A" : "B",
+            bankName: formData.bankName,
+            chequeNo: formData.chequeNo,
+            chequeDate: formattedChequeDate,
+            membershipDescription: formData.monthlyDescription,
+            fess_total: totalFees,
+            membershipFeesDetails
+        };
+        try {
+            const response = await fetch(`${BaseURL}/api/membership-fees`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                if (response.status === 409) {
+                    toast.error(errorData.message || 'Member has already paid the membership fee');
+                } else {
+                    throw new Error(`Error submitting member fees: ${response.statusText}`);
+                }
+            } else {
+                toast.success('Member fees added successfully!');
+                setShowAddModal(false);
+                resetField();
+                fetchMemberData();
+                fetchLatestNo();
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Error submitting member fees. Please try again later.');
+        }
     };
 
-    const [selectedMemberLibNo, setSelectedMemberLibNo] = useState('');
 
+    //edit function
+    //input change edit modal
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditData(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+    };
 
-    // Handle member change
-    const handleMemberChange = (e) => {
-        const selectedName = e.target.value;
-        setSelectedMemberName(selectedName);
-        const selectedMember = generalMember.find(member => member.fullName === selectedName);
-        if (selectedMember) {
-            setSelectedMemberId(selectedMember.memberId);
-            setSelectedMemberLibNo(selectedMember.libGenMembNo);
-        } else {
-            setSelectedMemberId('');
-            setSelectedMemberLibNo('');
-        }
+    //date format
+    const parseDate = (date) => {
+        if (!date) return '';
+        const [day, month, year] = date.split('-');
+        return `${year}-${month}-${day}`;
     };
 
     // Handle edit member change
@@ -211,57 +276,7 @@ const MembershipFees = () => {
         }
     };
 
-    const handleAddSubmit = async () => {
-        const formattedInvoiceDate = formatDate(formData.invoiceDate);
-        const formattedChequeDate = formData.chequeDate ? formatDate(formData.chequeDate) : null;
-        const totalFees = feesData.reduce((total, fee) => total + parseFloat(fee.feesAmount || 0), 0);
-
-        const membershipFeesDetails = feesData.map(fee => ({
-            feesIdF: fee.feesId,
-            feesAmount: parseFloat(fee.feesAmount || 0)
-        }));
-
-        const payload = {
-            memInvoiceNo: invoiceNumber,
-            memInvoiceDate: formattedInvoiceDate,
-            memberIdF: selectedMemberId,
-            feesType: formData.feeType === "Cash" ? "A" : "B",
-            bankName: formData.bankName,
-            chequeNo: formData.chequeNo,
-            chequeDate: formattedChequeDate,
-            membershipDescription: formData.monthlyDescription,
-            fess_total: totalFees,
-            membershipFeesDetails
-        };
-        try {
-            const response = await fetch(`${BaseURL}/api/membership-fees`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) {
-                throw new Error(`Error submitting member fees: ${response.statusText}`);
-            }
-            toast.success('Member fees added successfully!');
-            setShowAddModal(false);
-            resetField();
-            fetchMemberData();
-            fetchLatestNo();
-        } catch (error) {
-            console.error(error);
-            toast.error('Error submitting member fees. Please try again later.');
-        }
-    };
-
-    const parseDate = (date) => {
-        if (!date) return '';
-        const [day, month, year] = date.split('-');
-        return `${year}-${month}-${day}`;
-    };
-
+    //update edit api
     const handleEditClick = (item) => {
         const selectedMember = generalMember.find(member => member.memberId === item.memberIdF);
         const selectedMemberName = selectedMember ? selectedMember.fullName : '';
@@ -279,17 +294,14 @@ const MembershipFees = () => {
         });
         setShowEditModal(true);
     };
-
     const handleEditSubmit = async () => {
         const formattedInvoiceDate = formatDate(editData.invoiceDate);
         const formattedChequeDate = editData.chequeDate ? formatDate(editData.chequeDate) : null;
         const totalFees = feesData.reduce((total, fee) => total + parseFloat(fee.feesAmount || 0), 0);
-
         const membershipFeesDetails = feesData.map(fee => ({
             feesIdF: fee.feesId,
             feesAmount: parseFloat(fee.feesAmount || 0)
         }));
-
         const payload = {
             memInvoiceNo: editData.invoiceNo,
             memInvoiceDate: formattedInvoiceDate,
@@ -324,11 +336,13 @@ const MembershipFees = () => {
         }
     };
 
+    //delete functuon
     const handleDeleteClick = (membershipId) => {
         setDeleteId(membershipId);
         setShowDeleteModal(true);
     };
 
+    //delete api
     const handleDelete = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/membership-fees/${deleteId}`, {
@@ -350,6 +364,7 @@ const MembershipFees = () => {
         }
     };
 
+    //view 
     const handleViewClick = (item) => {
         setViewData(item);
         setShowViewModal(true);
@@ -375,6 +390,7 @@ const MembershipFees = () => {
     const indexOfNumber = indexOfLastBookType - perPage;
     const currentData = memberData.slice(indexOfNumber, indexOfLastBookType);
 
+    
     return (
         <div className="main-content">
             <Container className='small-screen-table'>

@@ -107,11 +107,8 @@ const BookScrap = () => {
                 navigate('/');
                 return;
             }
-            // const data = responseData.data;
-            // setBookScrap(data || []);
             const data = responseData.data;
-            const sortedData = data.sort((a, b) => a.ledgerName.localeCompare(b.ledgerName));
-            setBookScrap(sortedData || []);
+            setBookScrap(data || []);
         } catch (error) {
             console.error('Error fetching issues:', error);
             toast.error('Error fetching issues. Please try again later.');
