@@ -117,12 +117,19 @@ const BookLost = () => {
                 navigate('/');
                 return;
             }
+            // const data = responseData.data;
+            // const updatedData = data.map(issueItem => ({
+            //     ...issueItem,
+            //     fullName: `${issueItem.firstName} ${issueItem.middleName} ${issueItem.lastName}`
+            // }));
+            // setBookLost(updatedData || []);
             const data = responseData.data;
             const updatedData = data.map(issueItem => ({
                 ...issueItem,
                 fullName: `${issueItem.firstName} ${issueItem.middleName} ${issueItem.lastName}`
             }));
-            setBookLost(updatedData || []);
+            const sortedData = updatedData.sort((a, b) => a.fullName.localeCompare(b.fullName));
+            setBookLost(sortedData || []);
         } catch (error) {
             console.error('Error fetching issues:', error);
             toast.error('Error fetching issues. Please try again later.');

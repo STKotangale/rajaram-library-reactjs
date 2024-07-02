@@ -42,6 +42,11 @@ const BookLanguages = () => {
 
     }, [username, accessToken]);
 
+
+    useEffect(() => {
+        fetchBookLanguages();
+    }, []);
+
     // get api
     const fetchBookLanguages = async () => {
         try {
@@ -50,17 +55,13 @@ const BookLanguages = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            setBookLanguages(data.data);
-            setFiltered(data.data);
+            const sortedData = data.data.sort((a, b) => a.bookLangName.localeCompare(b.bookLangName));
+            setBookLanguages(sortedData);
+            setFiltered(sortedData);
         } catch (error) {
             console.error('Error fetching book languages:', error);
         }
     };
-
-    useEffect(() => {
-        fetchBookLanguages();
-    }, []);
-
 
     //reset fields
     const resetFormFields = () => {
@@ -154,18 +155,19 @@ const BookLanguages = () => {
                     'Authorization': `Bearer ${accessToken}`
                 }
             });
-
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                if (response.status === 409 && responseData.message) {
+                    throw new Error(responseData.message);
+                }
+                throw new Error(`Error deleting book type: ${response.statusText}`);
             }
-
             setBookLanguages(bookLanguages.filter(language => language.bookLangId !== languageId));
             toast.success('Book language delete successfully.');
             setShowDeleteConfirmation(false);
             fetchBookLanguages();
         } catch (error) {
-            console.error('Error deleting book language:', error);
-            toast.error('Error delete book language. Please try again later.');
+            toast.error(error.message || 'Error delete book language. Please try again later.');
         }
     };
 

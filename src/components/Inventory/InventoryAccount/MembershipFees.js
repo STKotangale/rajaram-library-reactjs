@@ -61,11 +61,18 @@ const MembershipFees = () => {
             if (!response.ok) {
                 throw new Error(`Error fetching member data: ${response.statusText}`);
             }
+            // const data = await response.json();
+            // setMemberData(data.map(member => ({
+            //     ...member,
+            //     fullName: `${member.firstName} ${member.middleName} ${member.lastName}`
+            // })));
             const data = await response.json();
-            setMemberData(data.map(member => ({
+            const sortedData = data.map(member => ({
                 ...member,
                 fullName: `${member.firstName} ${member.middleName} ${member.lastName}`
-            })));
+            })).sort((a, b) => a.fullName.localeCompare(b.fullName));
+    
+            setMemberData(sortedData);
         } catch (error) {
             console.error(error);
             toast.error('Error fetching member data. Please try again later.');
@@ -352,24 +359,18 @@ const MembershipFees = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const perPage = 8;
     const totalPages = Math.ceil(memberData.length / perPage);
-
     const handleNextPage = () => {
         setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
     };
-
     const handlePrevPage = () => {
         setCurrentPage(prevPage => Math.max(prevPage - 1, 1));
     };
-
-    // First and last page navigation functions
     const handleFirstPage = () => {
         setCurrentPage(1);
     };
-
     const handleLastPage = () => {
         setCurrentPage(totalPages);
     };
-
     const indexOfLastBookType = currentPage * perPage;
     const indexOfNumber = indexOfLastBookType - perPage;
     const currentData = memberData.slice(indexOfNumber, indexOfLastBookType);
@@ -397,7 +398,7 @@ const MembershipFees = () => {
                             <tbody>
                                 {currentData.map((item, index) => (
                                     <tr key={item.membershipId}>
-                                        <td>{index + 1}</td>
+                                        <td>{indexOfNumber + index + 1}</td>
                                         <td>{item.fullName}</td>
                                         <td>{item.memInvoiceNo}</td>
                                         <td>{item.memInvoiceDate}</td>
@@ -755,10 +756,7 @@ const MembershipFees = () => {
                 </div>
             </Modal>
 
-
-
-
-            
+            {/* delete modal */}
             <Modal centered show={showDeleteModal} onHide={() => setShowDeleteModal(false)} >
                 <div className="bg-light">
                     <Modal.Header closeButton>

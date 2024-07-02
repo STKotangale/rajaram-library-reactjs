@@ -112,7 +112,9 @@ const PurchaseReturn = () => {
                 navigate('/');
                 return;
             }
-            setPurchaseReturn(responseData.data || []);
+            const data = responseData.data;
+            const sortedData = data.sort((a, b) => a.ledgerName.localeCompare(b.ledgerName));
+            setPurchaseReturn(sortedData || []);
         } catch (error) {
             console.error('Error fetching purchase returns:', error);
             toast.info('No sessions found for the provided year range');
@@ -131,7 +133,7 @@ const PurchaseReturn = () => {
         const newEndDate = e.target.value;
         setEndDate(newEndDate);
     };
-    
+
     //search
     const handleSearchClick = () => {
         const formattedStartDate = formatDateToDDMMYYYY(new Date(startDate));

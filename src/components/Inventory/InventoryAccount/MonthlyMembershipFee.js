@@ -70,8 +70,12 @@ const MonthlyMembershipFee = () => {
             if (!response.ok) {
                 throw new Error(`Error fetching monthly membership fees: ${response.statusText}`);
             }
+            // const data = await response.json();
+            // setMonthlyMembershipData(data);
+
             const data = await response.json();
-            setMonthlyMembershipData(data);
+            const sortedData = data.sort((a, b) => a.memberName.localeCompare(b.memberName));
+            setMonthlyMembershipData(sortedData);
         } catch (error) {
             console.error(error);
             toast.error('Error fetching monthly membership fees. Please try again later.');
@@ -436,7 +440,7 @@ const MonthlyMembershipFee = () => {
                             <tbody>
                                 {currentData.map((issueItem, index) => (
                                     <tr key={issueItem.memberMonthlyId}>
-                                        <td>{index + 1}</td>
+                                        <td>{indexOfNumber + index + 1}</td>
                                         <td>{issueItem.memberName}</td>
                                         <td>{issueItem.memMonInvoiceNo}</td>
                                         <td>{(issueItem.memMonInvoiceDate)}</td>

@@ -41,6 +41,10 @@ const BookAuthor = () => {
     const { accessToken } = useAuth();
     const BaseURL = process.env.REACT_APP_BASE_URL;
 
+    useEffect(() => {
+        fetchBookAuthors();
+    }, []);
+
     //get api
     const fetchBookAuthors = async () => {
         try {
@@ -53,17 +57,14 @@ const BookAuthor = () => {
                 throw new Error(`Error fetching book authors: ${response.statusText}`);
             }
             const data = await response.json();
-            setBookAuthors(data.data);
-            setFiltered(data.data);
+            const sortedData = data.data.sort((a, b) => a.authorName.localeCompare(b.authorName));
+            setBookAuthors(sortedData);
+            setFiltered(sortedData);
         } catch (error) {
             console.error(error);
             toast.error('Error fetching book authors. Please try again later.');
         }
     };
-
-    useEffect(() => {
-        fetchBookAuthors();
-    }, []);
 
     //reset field
     const resetFormFields = () => {
@@ -151,8 +152,12 @@ const BookAuthor = () => {
                     'Authorization': `Bearer ${accessToken}`,
                 },
             });
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`Error deleting book author: ${response.statusText}`);
+                if (response.status === 409 && responseData.message) {
+                    throw new Error(responseData.message);
+                }
+                throw new Error(`Error deleting book type: ${response.statusText}`);
             }
             setBookAuthors(bookAuthors.filter(author => author.id !== selectedBookAuthorId));
             setShowDeleteConfirmation(false);
@@ -161,7 +166,7 @@ const BookAuthor = () => {
 
         } catch (error) {
             console.error(error);
-            toast.error('Error deleting book author. Please try again later.');
+            toast.error(error.message ||  'Error deleting book author. Please try again later.');
         }
     };
 

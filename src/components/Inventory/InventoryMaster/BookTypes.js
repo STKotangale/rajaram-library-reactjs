@@ -35,6 +35,10 @@ const BookTypes = () => {
     const { accessToken } = useAuth();
     const BaseURL = process.env.REACT_APP_BASE_URL;
 
+    useEffect(() => {
+        fetchBookTypes();
+    }, []);
+
     //get api
     const fetchBookTypes = async () => {
         try {
@@ -47,18 +51,16 @@ const BookTypes = () => {
                 throw new Error(`Error fetching book types: ${response.statusText}`);
             }
             const data = await response.json();
-            setBookTypes(data.data);
-            setFiltered(data.data);
+            const sortedData = data.data.sort((a, b) => a.bookTypeName.localeCompare(b.bookTypeName));
+            setBookTypes(sortedData);
+            setFiltered(sortedData);
         } catch (error) {
             console.error(error);
             toast.error('Error fetching book types. Please try again later.');
         }
     };
 
-    useEffect(() => {
-        fetchBookTypes();
-    }, []);
-
+ 
     //reset fields
     const resetFormFields = () => {
         setNewBookTypeName('');
@@ -145,7 +147,6 @@ const BookTypes = () => {
     };
 
 
-    //delete api
     const deleteBookType = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/booktype/book-types/${selectedBookTypeId}`, {
@@ -154,7 +155,11 @@ const BookTypes = () => {
                     'Authorization': `Bearer ${accessToken}`,
                 },
             });
+            const responseData = await response.json();
             if (!response.ok) {
+                if (response.status === 409 && responseData.message) {
+                    throw new Error(responseData.message);
+                }
                 throw new Error(`Error deleting book type: ${response.statusText}`);
             }
             setBookTypes(bookTypes.filter(bookType => bookType.bookTypeId !== selectedBookTypeId));
@@ -162,10 +167,10 @@ const BookTypes = () => {
             toast.success('Book type deleted successfully.');
             fetchBookTypes();
         } catch (error) {
-            console.error(error);
-            toast.error('Error deleting book type. Please try again later.');
+            toast.error(error.message || 'Error deleting book type. Please try again later.');
         }
     };
+    
 
     //view function
     const handleShowViewModal = (bookType) => {

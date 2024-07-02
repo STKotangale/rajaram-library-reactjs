@@ -76,29 +76,6 @@ const BookIssue = () => {
     }, [username, accessToken]);
 
 
-    // //get all isuue
-    // const fetchIssue = async () => {
-    //     try {
-    //         const response = await fetch(`${BaseURL}/api/issue/all`, {
-    //             headers: {
-    //                 'Authorization': `Bearer ${accessToken}`
-    //             }
-    //         });
-    //         if (!response.ok) {
-    //             throw new Error(`Error fetching issue: ${response.statusText}`);
-    //         }
-    //         const data = await response.json();
-    //         const updatedData = data.map(issueItem => ({
-    //             ...issueItem,
-    //             fullName: `${issueItem.firstName} ${issueItem.middleName} ${issueItem.lastName}`
-    //         }));
-    //         setIssue(updatedData);
-    //     } catch (error) {
-    //         console.error(error);
-    //         toast.error('Error fetching issue. Please try again later.');
-    //     }
-    // };
-
     //get session dates
     const fetchSessionDate = async () => {
         try {
@@ -152,7 +129,8 @@ const BookIssue = () => {
                 ...issueItem,
                 fullName: `${issueItem.firstName} ${issueItem.middleName} ${issueItem.lastName}`
             }));
-            setIssue(updatedData || []);
+            const sortedData = updatedData.sort((a, b) => a.fullName.localeCompare(b.fullName));
+            setIssue(sortedData || []);
         } catch (error) {
             console.error('Error fetching issues:', error);
             toast.error('Error fetching issues. Please try again later.');
