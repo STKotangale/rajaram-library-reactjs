@@ -77,12 +77,14 @@ const User = () => {
     const addUser = async (e) => {
         e.preventDefault();
         try {
-            // Validate mobile number length
             if (newMobileNumber.length !== 10) {
                 toast.error('Mobile number must be exactly 10 digits.');
                 return;
             }
-
+              if (newUserPassword.length < 6) {
+                toast.error('Password must be at least 6 characters.');
+                return;
+            }
             const response = await fetch(`${BaseURL}/api/auth/signup`, {
                 method: 'POST',
                 headers: {

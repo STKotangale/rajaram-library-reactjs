@@ -5,39 +5,33 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../Auth/AuthProvider';
 import { ChevronLeft, ChevronRight, Eye, PencilSquare, Trash } from 'react-bootstrap-icons';
 
-// Utility function to format date to dd-mm-yyyy
+//date format
 const formatDateToDDMMYYYY = (dateStr) => {
     const date = new Date(dateStr);
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
 };
 
-// Utility function to parse date from dd-mm-yyyy to yyyy-mm-dd
+//date format
 const parseDateFromDDMMYYYY = (dateStr) => {
     const [day, month, year] = dateStr.split('-');
     return `${year}-${month}-${day}`;
 };
 
 const MonthlyMembershipFee = () => {
+    //get all
     const [monthlyMembershipData, setMonthlyMembershipData] = useState([]);
+    //get general member
     const [generalMember, setGeneralMember] = useState([]);
     const [selectedMemberName, setSelectedMemberName] = useState('');
     const [selectedMemberId, setSelectedMemberId] = useState('');
-
-    const [monthlyFee, setMonthlyFee] = useState(0);
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [totalDays, setTotalDays] = useState(0);
-    const [totalFee, setTotalFee] = useState(0);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [showViewModal, setShowViewModal] = useState(false);
-    const [selectedIssueId, setSelectedIssueId] = useState(null);
-
+    //get and set invoice number
     const [invoiceNumber, setInvoiceNumber] = useState('');
+    //add / post
+    const [showAddModal, setShowAddModal] = useState(false);
     const [selectedMemberLibNo, setSelectedMemberLibNo] = useState('');
-
     const [formData, setFormData] = useState({
         invoiceDate: new Date().toISOString().substr(0, 10),
         fromDate: "",
@@ -49,7 +43,18 @@ const MonthlyMembershipFee = () => {
         chequeDate: "",
         monthlyDescription: ""
     });
-
+    const [monthlyFee, setMonthlyFee] = useState(0);
+    const [totalDays, setTotalDays] = useState(0);
+    const [totalFee, setTotalFee] = useState(0);
+    //edit
+    const [showEditModal, setShowEditModal] = useState(false);
+    //edit  and delete
+    const [selectedIssueId, setSelectedIssueId] = useState(null);
+    //delete
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    //view
+    const [showViewModal, setShowViewModal] = useState(false);
+    //auth
     const { username, accessToken } = useAuth();
     const BaseURL = process.env.REACT_APP_BASE_URL;
 
@@ -60,6 +65,7 @@ const MonthlyMembershipFee = () => {
         fetchLatestNo();
     }, [username, accessToken]);
 
+    //get all
     const fetchMonthlyData = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/monthly-member-fees`, {
@@ -70,9 +76,6 @@ const MonthlyMembershipFee = () => {
             if (!response.ok) {
                 throw new Error(`Error fetching monthly membership fees: ${response.statusText}`);
             }
-            // const data = await response.json();
-            // setMonthlyMembershipData(data);
-
             const data = await response.json();
             const sortedData = data.sort((a, b) => a.memberName.localeCompare(b.memberName));
             setMonthlyMembershipData(sortedData);
@@ -82,6 +85,7 @@ const MonthlyMembershipFee = () => {
         }
     };
 
+    //get general member
     const fetchGeneralMembers = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/general-members`, {
@@ -103,9 +107,7 @@ const MonthlyMembershipFee = () => {
         }
     };
 
-
-
-    // get  no.
+    // get  invoice number no.
     const fetchLatestNo = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/membership-fees/nextInvoiceNumber`, {
@@ -124,6 +126,7 @@ const MonthlyMembershipFee = () => {
         }
     };
 
+    //get monthly fee data
     const fetchMonthlyFee = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/config`, {
@@ -148,18 +151,16 @@ const MonthlyMembershipFee = () => {
     };
 
 
+    //input change
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
-
         if (name === "fromDate" || name === "toDate") {
             calculateTotalDaysAndFee(name === "fromDate" ? value : formData.fromDate, name === "toDate" ? value : formData.toDate);
         }
-
         if (name === "totalFee") {
             setTotalFee(parseFloat(value));
         }
-
         if (name === "selectedMemberName") {
             setSelectedMemberName(value);
             const selectedMember = generalMember.find(member => member.fullName === value);
@@ -171,7 +172,7 @@ const MonthlyMembershipFee = () => {
         }
     };
 
-
+    //calculatin
     const calculateTotalDaysAndFee = (fromDate, toDate) => {
         const from = new Date(fromDate);
         const to = new Date(toDate);
@@ -186,23 +187,42 @@ const MonthlyMembershipFee = () => {
         }
     };
 
-
-
-    const handleMemberChange = (e) => {
+    //member change
+    const handleMemberChange = async (e) => {
         const selectedName = e.target.value;
         setSelectedMemberName(selectedName);
         const selectedMember = generalMember.find(member => member.fullName === selectedName);
         if (selectedMember) {
             setSelectedMemberId(selectedMember.memberId);
             setSelectedMemberLibNo(selectedMember.libGenMembNo);
-
+            try {
+                const response = await fetch(`${BaseURL}/api/monthly-member-fees/next-day/${selectedMember.memberId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`Error fetching next available date: ${response.statusText}`);
+                }
+                const data = await response.json();
+                if (data.nextDay) {
+                    setFormData({ ...formData, fromDate: parseDateFromDDMMYYYY(data.nextDay), toDate: "" });
+                    toast.info(`Member has paid up to the previous month. Next available date: ${data.nextDay}`);
+                } else {
+                    setFormData({ ...formData, fromDate: "", toDate: "" });
+                    toast.info('Member has not paid for any previous month.');
+                }
+            } catch (error) {
+                console.error("Failed to fetch next available date:", error);
+                toast.error('Failed to fetch next available date. Please try again later.');
+                setFormData({ ...formData, fromDate: "", toDate: "" });
+            }
         } else {
             setSelectedMemberId('');
             setSelectedMemberLibNo('');
+            setFormData({ ...formData, fromDate: "", toDate: "" });
         }
     };
-
-
 
 
     const resetField = () => {
@@ -222,13 +242,13 @@ const MonthlyMembershipFee = () => {
         setTotalFee(0);
     };
 
+    //post api
     const handleAddSubmit = async (e) => {
         e.preventDefault();
         if (!selectedMemberName.trim()) {
             toast.error('Please select a member name.');
             return;
         }
-
         const feeTypePayload = formData.feeType === "Cash" ? "a" : "b";
         const payload = {
             memMonInvoiceNo: invoiceNumber,
@@ -268,13 +288,37 @@ const MonthlyMembershipFee = () => {
         }
     };
 
+    //edit function
+    const handleEditClick = (issueItem) => {
+        setSelectedIssueId(issueItem.memberMonthlyId);
+        setShowEditModal(true);
+        const fromDate = parseDateFromDDMMYYYY(issueItem.fromDate);
+        const toDate = parseDateFromDDMMYYYY(issueItem.toDate);
+        const daysDiff = calculateTotalDaysAndFee(fromDate, toDate);
+        setFormData({
+            invoiceNo: issueItem.memMonInvoiceNo,
+            invoiceDate: parseDateFromDDMMYYYY(issueItem.memMonInvoiceDate),
+            fromDate: parseDateFromDDMMYYYY(issueItem.fromDate),
+            toDate: parseDateFromDDMMYYYY(issueItem.toDate),
+            selectedMemberName: issueItem.memberName,
+            feeType: issueItem.feesType === "a" ? "Cash" : "Cheque",
+            bankName: issueItem.bankName,
+            chequeNo: issueItem.chequeNo,
+            chequeDate: parseDateFromDDMMYYYY(issueItem.chequeDate),
+            monthlyDescription: issueItem.monthlyDescription
+        });
+        setTotalDays(daysDiff);
+        setTotalFee(daysDiff * (monthlyFee / 30));
+        calculateTotalDaysAndFee(parseDateFromDDMMYYYY(issueItem.fromDate), parseDateFromDDMMYYYY(issueItem.toDate));
+    };
+
+    //edit / update api
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         const feeTypePayload = formData.feeType === "Cash" ? "a" : "b";
         const payload = {
             memMonInvoiceNo: formData.invoiceNo,
             memMonInvoiceDate: formatDateToDDMMYYYY(formData.invoiceDate),
-            // memberIdF: parseInt(formData.selectedMemberId),
             memberIdF: parseInt(selectedMemberId),
             fromDate: formatDateToDDMMYYYY(formData.fromDate),
             toDate: formatDateToDDMMYYYY(formData.toDate),
@@ -287,7 +331,6 @@ const MonthlyMembershipFee = () => {
             chequeDate: formatDateToDDMMYYYY(formData.chequeDate) || "",
             monthlyDescription: formData.monthlyDescription
         };
-
         try {
             const response = await fetch(`${BaseURL}/api/monthly-member-fees/${selectedIssueId}`, {
                 method: 'PUT',
@@ -311,38 +354,14 @@ const MonthlyMembershipFee = () => {
         }
     };
 
-    const handleEditClick = (issueItem) => {
-        setSelectedIssueId(issueItem.memberMonthlyId);
-        setShowEditModal(true);
-        const fromDate = parseDateFromDDMMYYYY(issueItem.fromDate);
-        const toDate = parseDateFromDDMMYYYY(issueItem.toDate);
-        const daysDiff = calculateTotalDaysAndFee(fromDate, toDate);
 
-        setFormData({
-            invoiceNo: issueItem.memMonInvoiceNo,
-            invoiceDate: parseDateFromDDMMYYYY(issueItem.memMonInvoiceDate),
-            fromDate: parseDateFromDDMMYYYY(issueItem.fromDate),
-            toDate: parseDateFromDDMMYYYY(issueItem.toDate),
-            // selectedMemberName: issueItem.memberIdF.toString(),
-            selectedMemberName: issueItem.memberName, // Member's name for display/edit
-
-            feeType: issueItem.feesType === "a" ? "Cash" : "Cheque",
-            bankName: issueItem.bankName,
-            chequeNo: issueItem.chequeNo,
-            chequeDate: parseDateFromDDMMYYYY(issueItem.chequeDate),
-            monthlyDescription: issueItem.monthlyDescription
-        });
-        setTotalDays(daysDiff);
-        setTotalFee(daysDiff * (monthlyFee / 30));
-        calculateTotalDaysAndFee(parseDateFromDDMMYYYY(issueItem.fromDate), parseDateFromDDMMYYYY(issueItem.toDate));
-    };
-
-
+    //delete
     const handleDeleteClick = (memberMonthlyId) => {
         setSelectedIssueId(memberMonthlyId);
         setShowDeleteModal(true);
     };
 
+    //delete api
     const confirmDelete = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/monthly-member-fees/${selectedIssueId}`, {
@@ -364,23 +383,22 @@ const MonthlyMembershipFee = () => {
         }
     };
 
+    //view
     const handleViewClick = (issueItem) => {
         const selectedMember = generalMember.find(member => member.memberId === parseInt(issueItem.memberIdF));
         const fullName = selectedMember ? `${selectedMember.firstName} ${selectedMember.middleName} ${selectedMember.lastName}` : '';
-
         setFormData({
             invoiceNo: issueItem.memMonInvoiceNo,
             invoiceDate: parseDateFromDDMMYYYY(issueItem.memMonInvoiceDate),
             fromDate: parseDateFromDDMMYYYY(issueItem.fromDate),
             toDate: parseDateFromDDMMYYYY(issueItem.toDate),
-            selectedMemberName: fullName, // Set full name here
+            selectedMemberName: fullName,
             feeType: issueItem.feesType === "a" ? "Cash" : "Cheque",
             bankName: issueItem.bankName,
             chequeNo: issueItem.chequeNo,
             chequeDate: parseDateFromDDMMYYYY(issueItem.chequeDate),
             monthlyDescription: issueItem.monthlyDescription
         });
-
         calculateTotalDaysAndFee(parseDateFromDDMMYYYY(issueItem.fromDate), parseDateFromDDMMYYYY(issueItem.toDate));
         setShowViewModal(true);
     };
@@ -389,30 +407,21 @@ const MonthlyMembershipFee = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const perPage = 8;
     const totalPages = Math.ceil(monthlyMembershipData.length / perPage);
-
     const handleNextPage = () => {
         setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
     };
-
     const handlePrevPage = () => {
         setCurrentPage(prevPage => Math.max(prevPage - 1, 1));
     };
-
-    // First and last page navigation functions
     const handleFirstPage = () => {
         setCurrentPage(1);
     };
-
     const handleLastPage = () => {
         setCurrentPage(totalPages);
     };
-
     const indexOfLastBookType = currentPage * perPage;
     const indexOfNumber = indexOfLastBookType - perPage;
     const currentData = monthlyMembershipData.slice(indexOfNumber, indexOfLastBookType);
-
-
-
 
     return (
         <div className="main-content">
@@ -498,30 +507,6 @@ const MonthlyMembershipFee = () => {
                                     />
                                 </Form.Group>
                             </Row>
-                            <Row className="mb-3">
-                                <Form.Group as={Col}>
-                                    <Form.Label>From Date</Form.Label>
-                                    <Form.Control
-                                        name="fromDate"
-                                        type="date"
-                                        value={formData.fromDate}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="custom-date-picker small-input"
-                                    />
-                                </Form.Group>
-                                <Form.Group as={Col}>
-                                    <Form.Label>To Date</Form.Label>
-                                    <Form.Control
-                                        name="toDate"
-                                        type="date"
-                                        value={formData.toDate}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="custom-date-picker small-input"
-                                    />
-                                </Form.Group>
-                            </Row>
 
                             <Row className="mb-3">
                                 <Form.Group as={Col}>
@@ -545,6 +530,31 @@ const MonthlyMembershipFee = () => {
                                         type="text"
                                         readOnly
                                         value={selectedMemberLibNo}
+                                    />
+                                </Form.Group>
+                            </Row>
+
+                            <Row className="mb-3">
+                                <Form.Group as={Col}>
+                                    <Form.Label>From Date</Form.Label>
+                                    <Form.Control
+                                        name="fromDate"
+                                        type="date"
+                                        value={formData.fromDate}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="custom-date-picker small-input"
+                                    />
+                                </Form.Group>
+                                <Form.Group as={Col}>
+                                    <Form.Label>To Date</Form.Label>
+                                    <Form.Control
+                                        name="toDate"
+                                        type="date"
+                                        value={formData.toDate}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="custom-date-picker small-input"
                                     />
                                 </Form.Group>
                             </Row>
@@ -737,25 +747,6 @@ const MonthlyMembershipFee = () => {
                             </Row>
 
                             <Row className="mb-3">
-                                {/* <Form.Group as={Col}>
-                                    <Form.Label>Member Name</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        name="selectedMemberId"
-                                        className="small-input"
-                                        value={formData.selectedMemberId}
-                                        onChange={handleInputChange}
-                                        required
-                                    >
-                                        <option value="">Select a member</option>
-                                        {generalMember.map(member => (
-                                            <option key={member.memberId} value={member.memberId}>
-                                                {member.username}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                </Form.Group> */}
-
                                 <Form.Group as={Col}>
                                     <Form.Label>Member Name</Form.Label>
                                     <Form.Control
