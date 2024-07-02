@@ -87,6 +87,7 @@ const Purchaser = () => {
             toast.success('Ledger added successfully.');
             setShowAddLedgerModal(false);
             resetFormFields();
+            fetchLedger();
         } catch (error) {
             console.error(error);
             toast.error('Error adding ledger. Please try again later.');
@@ -118,6 +119,7 @@ const Purchaser = () => {
             setLedger(updatedLedger);
             toast.success('Ledger edited successfully.');
             setShowEditLedgerModal(false);
+            fetchLedger();
         } catch (error) {
             console.error(error);
             toast.error('Error editing ledger. Please try again later.');
@@ -139,6 +141,7 @@ const Purchaser = () => {
             setLedger(ledger.filter(item => item.ledgerID !== selectedLedgerId));
             setShowDeleteConfirmation(false);
             toast.success('Ledger deleted successfully.');
+            fetchLedger();
         } catch (error) {
             console.error(error);
             toast.error('Error deleting ledger. Please try again later.');
