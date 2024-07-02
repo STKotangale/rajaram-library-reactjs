@@ -69,9 +69,16 @@ const PermanentMember = () => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
+            // const data = await response.json();
+            // setPermanentMember(data.data);
+            // setFilteredMember(data.data);
             const data = await response.json();
-            setPermanentMember(data.data);
-            setFilteredMember(data.data);
+            const sortedData = data.data.map(member => ({
+                ...member,
+                fullName: `${member.firstName} ${member.middleName} ${member.lastName}`
+            })).sort((a, b) => a.fullName.localeCompare(b.fullName));
+            setPermanentMember(sortedData);
+            setFilteredMember(sortedData);
         } catch (error) {
             console.error("Failed to fetch permanent members:", error);
             toast.error('Failed to load permanent members. Please try again later.');
@@ -280,9 +287,10 @@ const PermanentMember = () => {
                             <thead>
                                 <tr>
                                     <th>Sr.No</th>
-                                    <th>First Name</th>
+                                    <th>Member Name</th>
+                                    {/* <th>First Name</th>
                                     <th>Middle Name</th>
-                                    <th>Last Name</th>
+                                    <th>Last Name</th> */}
                                     <th>Register Date</th>
                                     <th>Mobile No</th>
                                     <th>Action</th>
@@ -292,9 +300,10 @@ const PermanentMember = () => {
                                 {currentData.map((member, index) => (
                                     <tr key={member.memberId}>
                                         <td>{indexOfFirstMember + index + 1}</td>
-                                        <td>{member.firstName}</td>
+                                        <td>{member.fullName}</td>
+                                        {/* <td>{member.firstName}</td>
                                         <td>{member.middleName}</td>
-                                        <td>{member.lastName}</td>
+                                        <td>{member.lastName}</td> */}
                                         <td>{(member.registerDate)}</td>
                                         <td>{member.mobileNo}</td>
                                         <td>
@@ -772,7 +781,7 @@ const PermanentMember = () => {
                     </Modal.Footer>
                 </div>
             </Modal>
-            
+
         </div>
     );
 };

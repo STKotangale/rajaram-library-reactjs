@@ -61,8 +61,9 @@ const Books = () => {
                 throw new Error(`Error fetching books: ${response.statusText}`);
             }
             const data = await response.json();
-            setBooks(data.data);
-            setFiltered(data.data);
+            const sortedData = data.data.sort((a, b) => a.bookName.localeCompare(b.bookName));
+            setBooks(sortedData);
+            setFiltered(sortedData);
         } catch (error) {
             console.error(error);
             toast.error('Error fetching books. Please try again later.');
@@ -126,7 +127,7 @@ const Books = () => {
     const editBook = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch(`${BaseURL}/api/book/all/${selectedBookId}`, {
+            const response = await fetch(`${BaseURL}/api/book/book/${selectedBookId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -164,14 +165,18 @@ const Books = () => {
     // Delete api
     const deleteBook = async () => {
         try {
-            const response = await fetch(`${BaseURL}/api/book/all/${selectedBookId}`, {
+            const response = await fetch(`${BaseURL}/api/book/book/${selectedBookId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                 },
             });
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`Error deleting book: ${response.statusText}`);
+                if (response.status === 409 && responseData.message) {
+                    throw new Error(responseData.message);
+                }
+                throw new Error(`Error deleting book type: ${response.statusText}`);
             }
             setBooks(books.filter(book => book.bookId !== selectedBookId));
             setShowDeleteConfirmation(false);
@@ -179,7 +184,7 @@ const Books = () => {
             fetchBooks();
         } catch (error) {
             console.error(error);
-            toast.error('Error deleting book. Please try again later.');
+            toast.error(error.message ||  'Error deleting book. Please try again later.');
         }
     };
 

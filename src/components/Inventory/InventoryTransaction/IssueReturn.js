@@ -127,9 +127,10 @@ const IssueReturn = () => {
             const data = responseData.data;
             const updatedData = data.map(issueItem => ({
                 ...issueItem,
-                fullName: `${issueItem.firstName} ${issueItem.middleName} ${issueItem.lastName}`
+                MemberFullName: `${issueItem.firstname} ${issueItem.middlename} ${issueItem.lastname}`
             }));
-            setIssueReturn(updatedData || []);
+            const sortedData = updatedData.sort((a, b) => a.MemberFullName.localeCompare(b.MemberFullName));
+            setIssueReturn(sortedData || []);
         } catch (error) {
             console.error('Error fetching issues:', error);
             toast.error('Error fetching issues. Please try again later.');
@@ -479,7 +480,7 @@ const IssueReturn = () => {
                                 {currentData.map((value, index) => (
                                     <tr key={value.stockId}>
                                         <td>{indexOfFirstItem + index + 1}</td>
-                                        <td>{value.username}</td>
+                                        <td>{value.MemberFullName}</td>
                                         <td>{value.invoiceNo}</td>
                                         <td>{value.invoiceDate}</td>
                                         <td>
@@ -691,7 +692,7 @@ const IssueReturn = () => {
                                     <Form.Label>Member Name</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        value={selectedDetail.username}
+                                        value={selectedDetail.MemberFullName}
                                         readOnly
                                         className="custom-date-picker small-input"
                                     />

@@ -9,42 +9,42 @@ import 'react-toastify/dist/ReactToastify.css';
 import './AuthCSS/User.css';
 
 const User = () => {
+    const { accessToken } = useAuth();
+    const BaseURL = process.env.REACT_APP_BASE_URL;
 
-    //search function
+    // State for managing users and filtered data
+    const [users, setUsers] = useState([]);
     const [filtered, setFiltered] = useState([]);
     const [dataQuery, setDataQuery] = useState("");
-    useEffect(() => {
-        setFiltered(users.filter(member =>
-            member.username.toLowerCase().includes(dataQuery.toLowerCase())
-        ));
-        setCurrentPage(1);
-    }, [dataQuery]);
-    //get
-    const [users, setUsers] = useState([]);
-    //add
+
+    // State for add user modal
     const [showAddUserModal, setShowAddUserModal] = useState(false);
     const [newUserName, setNewUserName] = useState('');
     const [newUserEmail, setNewUserEmail] = useState('');
     const [newMobileNumber, setNewMobileNumber] = useState('');
     const [newUserPassword, setNewUserPassword] = useState('');
-    //edit
+
+    // State for edit user modal
     const [showEditUserModal, setShowEditUserModal] = useState(false);
-    //delete
-    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-    //edit and delete
     const [selectedUserId, setSelectedUserId] = useState(null);
-    //view
+
+    // State for delete confirmation modal
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+    // State for view user modal
     const [showViewModal, setShowViewModal] = useState(false);
     const [viewUser, setViewUser] = useState(null);
-    //auth
-    const { accessToken } = useAuth();
-    const BaseURL = process.env.REACT_APP_BASE_URL;
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const perPage = 8;
+
+    // Fetch users on component mount
     useEffect(() => {
         fetchUsers();
     }, []);
 
-    //get api
+    // Fetch users API call
     const fetchUsers = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/auth/users`, {
@@ -56,8 +56,9 @@ const User = () => {
                 throw new Error(`Error fetching users: ${response.statusText}`);
             }
             const data = await response.json();
-            setUsers(data);
-            setFiltered(data);
+            const sortedData = data.sort((a, b) => a.username.localeCompare(b.username));
+            setUsers(sortedData);
+            setFiltered(sortedData);
         } catch (error) {
             console.error(error);
             toast.error('Error fetching users. Please try again later.');
@@ -72,10 +73,16 @@ const User = () => {
         setNewMobileNumber('');
     };
 
-    //post api
+    // Add user API call
     const addUser = async (e) => {
         e.preventDefault();
         try {
+            // Validate mobile number length
+            if (newMobileNumber.length !== 10) {
+                toast.error('Mobile number must be exactly 10 digits.');
+                return;
+            }
+
             const response = await fetch(`${BaseURL}/api/auth/signup`, {
                 method: 'POST',
                 headers: {
@@ -87,13 +94,26 @@ const User = () => {
                     email: newUserEmail,
                     password: newUserPassword,
                     mobileNo: parseInt(newMobileNumber)
-
                 }),
             });
+            const responseData = await response.json();
+
             if (!response.ok) {
-                throw new Error(`Error adding User: ${response.statusText}`);
+                if (response.status === 400) {
+                    if (responseData.message.includes('Username is already taken')) {
+                        toast.error('Username is already taken.');
+                    } else if (responseData.message.includes('Email is already in use')) {
+                        toast.error('Email is already in use.');
+                    } else {
+                        toast.error('Error adding User. Please try again later.');
+                    }
+                } else {
+                    throw new Error(`Error adding User: ${response.statusText}`);
+                }
+                return;
             }
-            const newUser = await response.json();
+
+            const newUser = responseData;
             setUsers([...users, newUser]);
             toast.success('User added successfully.');
             setShowAddUserModal(false);
@@ -105,7 +125,7 @@ const User = () => {
         }
     };
 
-    //edit api
+    // Edit user API call
     const editUser = async (e) => {
         e.preventDefault();
         try {
@@ -135,8 +155,8 @@ const User = () => {
                 return user;
             });
             setUsers(updatedUsers);
-            setShowEditUserModal(false);
             toast.success('User edited successfully.');
+            setShowEditUserModal(false);
             resetFormFields();
             fetchUsers();
         } catch (error) {
@@ -145,7 +165,7 @@ const User = () => {
         }
     };
 
-    //delete api
+    // Delete user API call
     const deleteUser = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/auth/${selectedUserId}`, {
@@ -158,25 +178,22 @@ const User = () => {
                 throw new Error(`Error deleting User: ${response.statusText}`);
             }
             setUsers(users.filter(user => user.userId !== selectedUserId));
-            setShowDeleteConfirmation(false);
             toast.success('User deleted successfully.');
+            setShowDeleteConfirmation(false);
+            fetchUsers();
         } catch (error) {
             console.error(error);
             toast.error('Error deleting User. Please try again later.');
         }
     };
 
-    //view
+    // Show view modal with user details
     const handleShowViewModal = (user) => {
         setViewUser(user);
         setShowViewModal(true);
     };
 
-
-    //pagination function
-    const [currentPage, setCurrentPage] = useState(1);
-    const perPage = 8;
-    const totalPages = Math.ceil(filtered.length / perPage);
+    // Pagination functions
     const handleNextPage = () => {
         setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
     };
@@ -189,8 +206,11 @@ const User = () => {
     const handleLastPage = () => {
         setCurrentPage(totalPages);
     };
+
+    // Calculate pagination variables
     const indexOfLastBookType = currentPage * perPage;
     const indexOfNumber = indexOfLastBookType - perPage;
+    const totalPages = Math.ceil(filtered.length / perPage);
     const currentData = filtered.slice(indexOfNumber, indexOfLastBookType);
 
     return (
@@ -232,7 +252,7 @@ const User = () => {
                                                 setSelectedUserId(user.userId);
                                                 setNewUserName(user.username);
                                                 setNewUserEmail(user.useremail);
-                                                setNewMobileNumber(user.mobileNo);
+                                                setNewMobileNumber(user.mobileNo.toString());
                                                 setNewUserPassword('');
                                                 setShowEditUserModal(true);
                                             }} />
@@ -256,8 +276,8 @@ const User = () => {
                     </div>
                 </div>
 
-                {/* Add Book Modal */}
-                <Modal show={showAddUserModal} onHide={() => { setShowAddUserModal(false); resetFormFields() }}>
+                {/* Add User Modal */}
+                <Modal show={showAddUserModal} onHide={() => { setShowAddUserModal(false); resetFormFields(); }}>
                     <Modal.Header closeButton>
                         <Modal.Title>Add New User</Modal.Title>
                     </Modal.Header>
@@ -395,17 +415,16 @@ const User = () => {
                     </Modal.Footer>
                 </Modal>
 
-
-                {/* View modal */}
+                {/* View User Modal */}
                 <Modal show={showViewModal} onHide={() => setShowViewModal(false)}>
                     <Modal.Header closeButton>
-                        <Modal.Title>View User </Modal.Title>
+                        <Modal.Title>View User</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
                             <Row className="mb-3">
                                 <Form.Group as={Col}>
-                                    <Form.Label> User</Form.Label>
+                                    <Form.Label>User</Form.Label>
                                     <Form.Control
                                         type="text"
                                         value={viewUser ? viewUser.username : ''}
@@ -437,18 +456,8 @@ const User = () => {
                     </Modal.Body>
                 </Modal>
             </Container>
-            
         </div>
     );
 };
 
 export default User;
-
-
-
-
-
-
-
-
-

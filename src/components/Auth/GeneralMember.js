@@ -72,9 +72,17 @@ const GeneralMember = () => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
+            // const data = await response.json();
+            // setGeneralMember(data.data);
+            // setFilteredMember(data.data);
             const data = await response.json();
-            setGeneralMember(data.data);
-            setFilteredMember(data.data);
+            const sortedData = data.data.map(member => ({
+                ...member,
+                fullName: `${member.firstName} ${member.middleName} ${member.lastName}`
+            })).sort((a, b) => a.fullName.localeCompare(b.fullName));
+
+            setGeneralMember(sortedData);
+            setFilteredMember(sortedData);
         } catch (error) {
             console.error("Failed to fetch general members:", error);
             toast.error('Failed to load general members. Please try again later.');
@@ -313,9 +321,10 @@ const GeneralMember = () => {
                             <thead>
                                 <tr>
                                     <th>Sr.No</th>
-                                    <th>First Name</th>
+                                    <th>Member Name</th>
+                                    {/* <th>First Name</th>
                                     <th>Middle Name</th>
-                                    <th>Last Name</th>
+                                    <th>Last Name</th> */}
                                     <th>Register Date</th>
                                     <th>Mobile No</th>
                                     <th>Action</th>
@@ -325,9 +334,10 @@ const GeneralMember = () => {
                                 {currentData.map((member, index) => (
                                     <tr key={member.memberId}>
                                         <td>{indexOfNumber + index + 1}</td>
-                                        <td>{member.firstName}</td>
+                                        <td>{member.fullName}</td>
+                                        {/* <td>{member.firstName}</td>
                                         <td>{member.middleName}</td>
-                                        <td>{member.lastName}</td>
+                                        <td>{member.lastName}</td> */}
                                         <td>{member.registerDate}</td>
                                         <td>{member.mobileNo}</td>
                                         <td>

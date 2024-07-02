@@ -52,8 +52,9 @@ const Purchaser = () => {
                 throw new Error(`Error fetching ledger: ${response.statusText}`);
             }
             const data = await response.json();
-            setLedger(data.data);
-            setFiltered(data.data);
+            const sortedData = data.data.sort((a, b) => a.ledgerName.localeCompare(b.ledgerName));
+            setLedger(sortedData);
+            setFiltered(sortedData);
         } catch (error) {
             console.error(error);
             toast.error('Error fetching ledger. Please try again later.');

@@ -42,38 +42,33 @@ const BookPublication = () => {
     //auth
     const { accessToken } = useAuth();
     const BaseURL = process.env.REACT_APP_BASE_URL;
-    // const accessToken = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYW5kZXNoIiwiaWF0IjoxNzE5Mzk1MDIyLCJleHAiOjE3MTk0ODE0MjJ9.BaSSW7OBDEFj0ePzc8mvoG2tJhnGCA5QIrYT_mu7gtM"
 
+    useEffect(() => {
+        fetchBookPublication();
+    }, [accessToken]);
 
+    //get api
     const fetchBookPublication = async () => {
-        const accessToken = localStorage.getItem('accessToken');
-        console.log("Token", accessToken);
         try {
             const response = await fetch(`${BaseURL}/api/book-publications`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
-                },
-                credentials: 'include' 
+                }
             });
             if (!response.ok) {
                 throw new Error(`Error fetching book publication: ${response.statusText}`);
             }
             const data = await response.json();
-            setBookPublication(data.data);
-            setFiltered(data.data);
-            toast.success('Book publications fetched successfully.');
+            const sortedData = data.data.sort((a, b) => a.publicationName.localeCompare(b.publicationName));
+            setBookPublication(sortedData);
+            setFiltered(sortedData);
         } catch (error) {
             console.error('Fetch error:', error);
             toast.error('Error fetching book publication. Please try again later.');
         }
     };
-    
-
-    useEffect(() => {
-        fetchBookPublication();
-    }, [accessToken]);
 
     //reset fields
     const resetFormFields = () => {
@@ -108,7 +103,6 @@ const BookPublication = () => {
             toast.success('Book publication added successfully.');
             resetFormFields();
             fetchBookPublication();
-
         } catch (error) {
             console.error(error);
             toast.error('Error adding book publication. Please try again later.');
@@ -157,17 +151,20 @@ const BookPublication = () => {
                     'Authorization': `Bearer ${accessToken}`,
                 },
             });
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`Error deleting book publication: ${response.statusText}`);
+                if (response.status === 409 && responseData.message) {
+                    throw new Error(responseData.message);
+                }
+                throw new Error(`Error deleting book type: ${response.statusText}`);
             }
             setBookPublication(bookPublication.filter(publication => publication.id !== selectedBookPublicationId));
             setShowDeleteConfirmation(false);
             toast.success('Book publication deleted successfully.');
             fetchBookPublication();
-
         } catch (error) {
             console.error(error);
-            toast.error('Error deleting book publication. Please try again later.');
+            toast.error(error.message ||  'Error deleting book publication. Please try again later.');
         }
     };
 

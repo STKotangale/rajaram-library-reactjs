@@ -122,8 +122,10 @@ const ViewPurchase = () => {
             }
             const responseData = await response.json();
             if (responseData.success) {
-                setPurchases(responseData.data || []);
-                setFiltered(responseData.data || []);
+                const data = responseData.data;
+                const sortedData = data.sort((a, b) => a.ledgerName.localeCompare(b.ledgerName));
+                setPurchases(sortedData || []);
+                setFiltered(sortedData || []);
             } else {
                 toast.error('Error fetching issues. Please try again later.');
             }
