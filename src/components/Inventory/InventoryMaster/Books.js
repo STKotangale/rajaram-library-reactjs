@@ -105,7 +105,7 @@ const Books = () => {
             }),
         };
         try {
-            const response = await fetch(`${BaseURL}/api/book/all`, requestOptions);
+            const response = await fetch(`${BaseURL}/api/book/book`, requestOptions);
             const responseData = await response.json();
 
             if (!response.ok) {
