@@ -164,7 +164,7 @@ const BookPublication = () => {
             fetchBookPublication();
         } catch (error) {
             console.error(error);
-            toast.error(error.message ||  'Error deleting book publication. Please try again later.');
+            toast.error(error.message || 'Error deleting book publication. Please try again later.');
         }
     };
 

@@ -377,6 +377,13 @@ const BookIssue = () => {
             });
             return;
         }
+        
+        const validRows = rows.filter(row => row.accessionNo);
+        if (validRows.length === 0) {
+            toast.error("Please select or enter at least one accession number.");
+            return;
+        }
+
         if (!isMembershipValid) {
             return;
         }

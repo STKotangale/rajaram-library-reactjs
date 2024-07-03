@@ -100,10 +100,10 @@ const User = () => {
 
             if (!response.ok) {
                 if (response.status === 400) {
-                    if (responseData.message.includes('Username is already exists')) {
+                    if (responseData.message.includes('Username is already taken')) {
                         toast.error('Username is already exists.');
-                    } else if (responseData.message.includes('Email is already exists')) {
-                        toast.error('Email is already in exists.');
+                    } else if (responseData.message.includes('Email is already in use')) {
+                        toast.error('Email is already exists.');
                     } else {
                         toast.error('Error adding User. Please try again later.');
                     }
@@ -125,12 +125,11 @@ const User = () => {
         }
     };
 
-    // Edit user API call
     const editUser = async (e) => {
         e.preventDefault();
         try {
             const mobileNo = parseInt(newMobileNumber, 10);
-
+    
             const response = await fetch(`${BaseURL}/api/auth/${selectedUserId}`, {
                 method: 'PUT',
                 headers: {
@@ -145,7 +144,15 @@ const User = () => {
                 }),
             });
             if (!response.ok) {
-                throw new Error(`Error editing User: ${response.statusText}`);
+                const errorData = await response.json();
+                if (errorData.message.includes('username_UNIQUE')) {
+                    toast.error('Username already exists.');
+                } else if (errorData.message.includes('useremail_UNIQUE')) {
+                    toast.error('Email already exists.');
+                } else {
+                    throw new Error(`Error editing User: ${response.statusText}`);
+                }
+                return;
             }
             const updatedUserData = await response.json();
             const updatedUsers = users.map(user => {
@@ -164,7 +171,7 @@ const User = () => {
             toast.error('Error editing User. Please try again later.');
         }
     };
-
+    
     // Delete user API call
     const deleteUser = async () => {
         try {
