@@ -100,10 +100,10 @@ const User = () => {
 
             if (!response.ok) {
                 if (response.status === 400) {
-                    if (responseData.message.includes('Username is already taken')) {
-                        toast.error('Username is already taken.');
-                    } else if (responseData.message.includes('Email is already in use')) {
-                        toast.error('Email is already in use.');
+                    if (responseData.message.includes('Username is already exists')) {
+                        toast.error('Username is already exists.');
+                    } else if (responseData.message.includes('Email is already exists')) {
+                        toast.error('Email is already in exists.');
                     } else {
                         toast.error('Error adding User. Please try again later.');
                     }
@@ -237,7 +237,7 @@ const User = () => {
                             <thead>
                                 <tr>
                                     <th>Sr.No</th>
-                                    <th>Users</th>
+                                    <th>User Name</th>
                                     <th>Email</th>
                                     <th>Action</th>
                                 </tr>
@@ -288,18 +288,20 @@ const User = () => {
                                 <Form.Label>User Name</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Enter User name"
+                                    placeholder="User name"
                                     value={newUserName}
                                     onChange={(e) => setNewUserName(e.target.value)}
                                     required
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3" controlId="newUserMobile">
-                                <Form.Label>Mobile No</Form.Label>
+                                <Form.Label>Mobile Number</Form.Label>
                                 <Form.Control
                                     type="tel"
                                     placeholder="Mobile Number"
                                     value={newMobileNumber}
+                                    maxLength={10}
+                                    pattern="\d{10}"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (/^\d*$/.test(value) && value.length <= 10) {

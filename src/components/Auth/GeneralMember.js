@@ -138,15 +138,28 @@ const GeneralMember = () => {
                 },
                 body: JSON.stringify(payload),
             });
+
             if (!response.ok) {
-                throw new Error(`Error adding general member: ${response.statusText}`);
+                const errorData = await response.json();
+                if (response.status === 409) {
+                    if (errorData.message.includes('username_UNIQUE')) {
+                        toast.error('Username already exists.');
+                    } else if (errorData.message.includes('useremail_UNIQUE')) {
+                        toast.error('Email already exists.');
+                    } else {
+                        toast.error(errorData.message);
+                    }
+                } else {
+                    throw new Error(`Error adding general member: ${response.statusText}`);
+                }
+            } else {
+                const data = await response.json();
+                setGeneralMember([...generalMember, data.data]);
+                toast.success('General member added successfully.');
+                setShowAddGeneralMemberModal(false);
+                resetFormFields();
+                fetchGeneralMembers();
             }
-            const data = await response.json();
-            setGeneralMember([...generalMember, data.data]);
-            toast.success('General member added successfully.');
-            setShowAddGeneralMemberModal(false);
-            resetFormFields();
-            fetchGeneralMembers();
         } catch (error) {
             console.error(error);
             toast.error('Error adding general member. Please try again later.');
@@ -186,21 +199,10 @@ const GeneralMember = () => {
             }
             const { memberId, ...requestData } = editGeneralMemberData;
             const payload = {
-                firstName: requestData.firstName,
-                middleName: requestData.middleName,
-                lastName: requestData.lastName,
-                adharCard: requestData.adharCard,
-                memberAddress: requestData.memberAddress,
-                memberEducation: requestData.memberEducation,
-                memberOccupation: requestData.memberOccupation,
-                mobileNo: requestData.mobileNo,
-                memberEmailId: requestData.email,
-                username: requestData.username,
-                password: requestData.password,
+                ...requestData,
                 registerDate: parseDate(requestData.registerDate),
                 dateOfBirth: parseDate(requestData.dateOfBirth),
                 confirmDate: parseDate(requestData.confirmDate),
-                libGenMembNo: requestData.libGenMembNo,
             };
             const response = await fetch(`${BaseURL}/api/general-members/${memberId}`, {
                 method: 'PUT',
@@ -212,24 +214,37 @@ const GeneralMember = () => {
             });
 
             if (!response.ok) {
-                throw new Error(`Error editing general member: ${response.statusText}`);
-            }
-            const updatedGeneralMemberData = await response.json();
-            const updatedGeneralMembers = generalMember.map(member => {
-                if (member.memberId === updatedGeneralMemberData.data.memberId) {
-                    return updatedGeneralMemberData.data;
+                const errorData = await response.json();
+                if (response.status === 409) {
+                    if (errorData.message.includes('username_UNIQUE')) {
+                        toast.error('Username already exists.');
+                    } else if (errorData.message.includes('useremail_UNIQUE')) {
+                        toast.error('Email already exists.');
+                    } else {
+                        toast.error(errorData.message);
+                    }
+                } else {
+                    throw new Error(`Error editing general member: ${response.statusText}`);
                 }
-                return member;
-            });
-            setGeneralMember(updatedGeneralMembers);
-            setShowEditGeneralMemberModal(false);
-            toast.success('General member edited successfully.');
-            fetchGeneralMembers();
+            } else {
+                const updatedGeneralMemberData = await response.json();
+                const updatedGeneralMembers = generalMember.map(member => {
+                    if (member.memberId === updatedGeneralMemberData.data.memberId) {
+                        return updatedGeneralMemberData.data;
+                    }
+                    return member;
+                });
+                setGeneralMember(updatedGeneralMembers);
+                setShowEditGeneralMemberModal(false);
+                toast.success('General member edited successfully.');
+                fetchGeneralMembers();
+            }
         } catch (error) {
             console.error(error);
             toast.error('Error editing general member. Please try again later.');
         }
     };
+
 
     //delete api
     const deleteGeneralMember = async () => {
@@ -322,9 +337,6 @@ const GeneralMember = () => {
                                 <tr>
                                     <th>Sr.No</th>
                                     <th>Member Name</th>
-                                    {/* <th>First Name</th>
-                                    <th>Middle Name</th>
-                                    <th>Last Name</th> */}
                                     <th>Register Date</th>
                                     <th>Mobile No</th>
                                     <th>Action</th>
@@ -335,9 +347,6 @@ const GeneralMember = () => {
                                     <tr key={member.memberId}>
                                         <td>{indexOfNumber + index + 1}</td>
                                         <td>{member.fullName}</td>
-                                        {/* <td>{member.firstName}</td>
-                                        <td>{member.middleName}</td>
-                                        <td>{member.lastName}</td> */}
                                         <td>{member.registerDate}</td>
                                         <td>{member.mobileNo}</td>
                                         <td>
@@ -416,11 +425,13 @@ const GeneralMember = () => {
 
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newGeneralMemberMobileNo">
-                                    <Form.Label>Mobile No</Form.Label>
+                                    <Form.Label>Mobile Number</Form.Label>
                                     <Form.Control
                                         type="tel"
-                                        placeholder="Mobile number"
+                                        placeholder="Mobile Number"
                                         value={newGeneralMember.mobileNo}
+                                        maxLength={10}
+                                        pattern="\d{10}"
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             if (value.length <= 10 && /^\d*$/.test(value)) {
@@ -433,10 +444,10 @@ const GeneralMember = () => {
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newGeneralMemberAadharCard">
                                     <Form.Label>Aadhar Number</Form.Label>
                                     <Form.Control
-                                        type="number"
-                                        placeholder="Aadhar"
-                                        maxLength={12}
-                                        pattern="\d{12}"
+                                        type="text"
+                                        placeholder="Aadhar Number"
+                                        maxLength={10}
+                                        pattern="\d{10}"
                                         value={newGeneralMember.adharCard}
                                         onChange={(e) => {
                                             const value = e.target.value;
@@ -524,10 +535,10 @@ const GeneralMember = () => {
 
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newGeneralMemberlibParMembNo">
-                                    <Form.Label>Libaray Member No </Form.Label>
+                                    <Form.Label>Libaray Member Number </Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Member No"
+                                        placeholder="Member Number"
                                         value={newGeneralMember.libGenMembNo}
                                         onChange={(e) => setNewGeneralMember({ ...newGeneralMember, libGenMembNo: e.target.value })}
                                         required
@@ -608,10 +619,12 @@ const GeneralMember = () => {
 
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedGeneralMemberMobileNo">
-                                    <Form.Label>Mobile No</Form.Label>
+                                    <Form.Label>Mobile Number</Form.Label>
                                     <Form.Control
                                         type="tel"
                                         placeholder="Mobile number"
+                                        maxLength={10}
+                                        pattern="\d{10}"
                                         value={editGeneralMemberData ? editGeneralMemberData.mobileNo : ''}
                                         onChange={(e) => {
                                             const value = e.target.value;
@@ -625,8 +638,10 @@ const GeneralMember = () => {
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedGeneralMemberAadharCard">
                                     <Form.Label>Aadhar Number</Form.Label>
                                     <Form.Control
-                                        type="number"
-                                        placeholder="Aadhar"
+                                        type="text"
+                                        placeholder="Aadhar Number"
+                                        maxLength={12}
+                                        pattern="\d{12}"
                                         value={editGeneralMemberData ? editGeneralMemberData.adharCard : ''}
                                         onChange={(e) => {
                                             const value = e.target.value;
@@ -640,8 +655,8 @@ const GeneralMember = () => {
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedGeneralMemberEmailId">
                                     <Form.Label>Email Id</Form.Label>
                                     <Form.Control
-                                        type="text"
-                                        placeholder="Email"
+                                        type="email"
+                                        placeholder="Email Id"
                                         value={editGeneralMemberData ? editGeneralMemberData.email : ''}
                                         onChange={(e) => setEditGeneralMemberData({ ...editGeneralMemberData, email: e.target.value })}
                                         required
