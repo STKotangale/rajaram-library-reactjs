@@ -84,7 +84,7 @@ const Purchaser = () => {
             }
             const newLedger = await response.json();
             setLedger([...ledger, newLedger.data]);
-            toast.success('Ledger added successfully.');
+            toast.success('Purchaser added successfully.');
             setShowAddLedgerModal(false);
             resetFormFields();
             fetchLedger();
@@ -247,7 +247,7 @@ const Purchaser = () => {
                                 <Form.Label>Purchaser Name</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Enter purchaser name"
+                                    placeholder="Purchaser Name"
                                     value={newLedgerName}
                                     onChange={(e) => setNewLedgerName(e.target.value)}
                                     required
@@ -273,7 +273,7 @@ const Purchaser = () => {
                                 <Form.Label>Purchaser Name</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Enter edited purchaser name"
+                                    placeholder="Purchaser Name"
                                     value={newLedgerName}
                                     onChange={(e) => setNewLedgerName(e.target.value)}
                                     required

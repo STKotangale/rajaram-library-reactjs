@@ -105,8 +105,6 @@ const PermanentMember = () => {
     };
 
 
-    //post function
-
     // date format dd - mm - yyyy
     const parseDate = (date) => {
         if (!date) return '';
@@ -118,7 +116,6 @@ const PermanentMember = () => {
         e.preventDefault();
         try {
             const mobileNo = parseInt(newPermanentMember.mobileNo);
-
             const payload = {
                 ...newPermanentMember,
                 mobileNo,
@@ -168,7 +165,6 @@ const PermanentMember = () => {
                 throw new Error('No memberId provided for editing.');
             }
             const { memberId, ...requestData } = editPermanentMemberData;
-
             const payload = {
                 ...requestData,
                 registerDate: parseDate(requestData.registerDate),
@@ -290,11 +286,8 @@ const PermanentMember = () => {
                                 <tr>
                                     <th>Sr.No</th>
                                     <th>Member Name</th>
-                                    {/* <th>First Name</th>
-                                    <th>Middle Name</th>
-                                    <th>Last Name</th> */}
                                     <th>Register Date</th>
-                                    <th>Mobile No</th>
+                                    <th>Mobile Number</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -303,9 +296,6 @@ const PermanentMember = () => {
                                     <tr key={member.memberId}>
                                         <td>{indexOfFirstMember + index + 1}</td>
                                         <td>{member.fullName}</td>
-                                        {/* <td>{member.firstName}</td>
-                                        <td>{member.middleName}</td>
-                                        <td>{member.lastName}</td> */}
                                         <td>{(member.registerDate)}</td>
                                         <td>{member.mobileNo}</td>
                                         <td>
@@ -383,10 +373,12 @@ const PermanentMember = () => {
 
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newPermanentMemberMobileNo">
-                                    <Form.Label>Mobile No</Form.Label>
+                                    <Form.Label>Mobile Number</Form.Label>
                                     <Form.Control
                                         type="tel"
-                                        placeholder="Mobile number"
+                                        placeholder="Mobile Number"
+                                        maxLength={10}
+                                        pattern="\d{10}"
                                         value={newPermanentMember.mobileNo}
                                         onChange={(e) => {
                                             const value = e.target.value;
@@ -401,7 +393,7 @@ const PermanentMember = () => {
                                     <Form.Label>Aadhar Number</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Aadhar"
+                                        placeholder="Aadhar Number"
                                         maxLength={12}
                                         pattern="\d{12}"
                                         value={newPermanentMember.adharCard}
@@ -417,8 +409,8 @@ const PermanentMember = () => {
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newPermanentMemberEmailId">
                                     <Form.Label>Email Id</Form.Label>
                                     <Form.Control
-                                        type="text"
-                                        placeholder="emailId"
+                                        type="email"
+                                        placeholder="Email Id"
                                         value={newPermanentMember.emailId}
                                         onChange={(e) => setNewPermanentMember({ ...newPermanentMember, emailId: e.target.value })}
                                         required
@@ -490,10 +482,10 @@ const PermanentMember = () => {
                             </Row>
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newPermanentMemberlibParMembNo">
-                                    <Form.Label>Libaray Member No </Form.Label>
+                                    <Form.Label>Libaray Member Number</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Member No"
+                                        placeholder="Libaray Member Number"
                                         value={newPermanentMember.libParMembNo}
                                         onChange={(e) => setNewPermanentMember({ ...newPermanentMember, libParMembNo: e.target.value })}
                                         required
@@ -555,10 +547,12 @@ const PermanentMember = () => {
 
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedPermanentMemberMobileNo">
-                                    <Form.Label>Mobile No</Form.Label>
+                                    <Form.Label>Mobile Number</Form.Label>
                                     <Form.Control
                                         type="number"
                                         placeholder="Mobile number"
+                                        maxLength={10}
+                                        pattern="\d{10}"
                                         value={editPermanentMemberData ? editPermanentMemberData.mobileNo : ''}
                                         onChange={(e) => {
                                             const value = e.target.value;
@@ -573,7 +567,9 @@ const PermanentMember = () => {
                                     <Form.Label>Aadhar Number</Form.Label>
                                     <Form.Control
                                         type="number"
-                                        placeholder="Aadhar"
+                                        placeholder="Aadhar Number"
+                                        maxLength={12}
+                                        pattern="\d{12}"
                                         value={editPermanentMemberData ? editPermanentMemberData.adharCard : ''}
                                         onChange={(e) => {
                                             const value = e.target.value;
@@ -587,8 +583,8 @@ const PermanentMember = () => {
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedPermanentMemberEmailId">
                                     <Form.Label>Email Id</Form.Label>
                                     <Form.Control
-                                        type="text"
-                                        placeholder="emailId"
+                                        type="email"
+                                        placeholder="Email Id"
                                         value={editPermanentMemberData.emailId}
                                         onChange={(e) => setEditPermanentMemberData({ ...editPermanentMemberData, emailId: e.target.value })}
                                         required
@@ -661,10 +657,10 @@ const PermanentMember = () => {
                             </Row>
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newPermanentMemberlibParMembNo">
-                                    <Form.Label>Libaray Member No </Form.Label>
+                                    <Form.Label>Libaray Member Number</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Member No"
+                                        placeholder="Libaray Member Number"
                                         value={editPermanentMemberData ? editPermanentMemberData.libParMembNo : ''}
                                         onChange={(e) => setEditPermanentMemberData({ ...editPermanentMemberData, libParMembNo: e.target.value })}
                                         required
@@ -725,11 +721,11 @@ const PermanentMember = () => {
 
                                 <Row className="mb-3">
                                     <Form.Group as={Col} lg={4} className="mb-3">
-                                        <Form.Label>Mobile No</Form.Label>
+                                        <Form.Label>Mobile Number</Form.Label>
                                         <Form.Control type="text" readOnly defaultValue={viewPermanentMemberData.mobileNo} />
                                     </Form.Group>
                                     <Form.Group as={Col} lg={4} className="mb-3">
-                                        <Form.Label>Aadhar No</Form.Label>
+                                        <Form.Label>Aadhar Number</Form.Label>
                                         <Form.Control type="text" readOnly defaultValue={viewPermanentMemberData.adharCard} />
                                     </Form.Group>
                                     <Form.Group as={Col} lg={4} className="mb-3">
@@ -769,7 +765,7 @@ const PermanentMember = () => {
                                 </Row>
                                 <Row className="mb-3">
                                     <Form.Group as={Col} lg={4} className="mb-3">
-                                        <Form.Label>Member No</Form.Label>
+                                        <Form.Label>Libaray Member Number</Form.Label>
                                         <Form.Control type="text" readOnly defaultValue={viewPermanentMemberData.libParMembNo} />
                                     </Form.Group>
                                 </Row>
