@@ -49,7 +49,7 @@ const Purchaser = () => {
                 }
             });
             if (!response.ok) {
-                throw new Error(`Error fetching ledger: ${response.statusText}`);
+                throw new Error(`Error fetching purchaser: ${response.statusText}`);
             }
             const data = await response.json();
             const sortedData = data.data.sort((a, b) => a.ledgerName.localeCompare(b.ledgerName));
@@ -57,7 +57,7 @@ const Purchaser = () => {
             setFiltered(sortedData);
         } catch (error) {
             console.error(error);
-            toast.error('Error fetching ledger. Please try again later.');
+            toast.error('Error fetching purchaser. Please try again later.');
         }
     };
 
@@ -80,7 +80,7 @@ const Purchaser = () => {
 
             });
             if (!response.ok) {
-                throw new Error(`Error adding ledger: ${response.statusText}`);
+                throw new Error(`Error adding purchaser: ${response.statusText}`);
             }
             const newLedger = await response.json();
             setLedger([...ledger, newLedger.data]);
@@ -90,7 +90,7 @@ const Purchaser = () => {
             fetchLedger();
         } catch (error) {
             console.error(error);
-            toast.error('Error adding ledger. Please try again later.');
+            toast.error('Error adding purchaser. Please try again later.');
         }
     };
 
@@ -107,7 +107,7 @@ const Purchaser = () => {
                 body: JSON.stringify({ ledgerName: newLedgerName }),
             });
             if (!response.ok) {
-                throw new Error(`Error editing ledger: ${response.statusText}`);
+                throw new Error(`Error editing purchaser: ${response.statusText}`);
             }
             const updatedLedgerData = await response.json();
             const updatedLedger = ledger.map(item => {
@@ -117,12 +117,12 @@ const Purchaser = () => {
                 return item;
             });
             setLedger(updatedLedger);
-            toast.success('Ledger edited successfully.');
+            toast.success('Purchaser edited successfully.');
             setShowEditLedgerModal(false);
             fetchLedger();
         } catch (error) {
             console.error(error);
-            toast.error('Error editing ledger. Please try again later.');
+            toast.error('Error editing purchaser. Please try again later.');
         }
     };
 
@@ -136,15 +136,15 @@ const Purchaser = () => {
                 },
             });
             if (!response.ok) {
-                throw new Error(`Error deleting ledger: ${response.statusText}`);
+                throw new Error(`Error deleting purchaser: ${response.statusText}`);
             }
             setLedger(ledger.filter(item => item.ledgerID !== selectedLedgerId));
             setShowDeleteConfirmation(false);
-            toast.success('Ledger deleted successfully.');
+            toast.success('Purchaser deleted successfully.');
             fetchLedger();
         } catch (error) {
             console.error(error);
-            toast.error('Error deleting ledger. Please try again later.');
+            toast.error('Error deleting purchaser. Please try again later.');
         }
     };
 

@@ -190,7 +190,6 @@ const GeneralMember = () => {
         }
     };
 
-    //put / edit api
     const editGeneralMember = async (e) => {
         e.preventDefault();
         try {
@@ -199,10 +198,21 @@ const GeneralMember = () => {
             }
             const { memberId, ...requestData } = editGeneralMemberData;
             const payload = {
-                ...requestData,
+                firstName: requestData.firstName,
+                middleName: requestData.middleName,
+                lastName: requestData.lastName,
+                adharCard: requestData.adharCard,
+                memberAddress: requestData.memberAddress,
+                memberEducation: requestData.memberEducation,
+                memberOccupation: requestData.memberOccupation,
+                mobileNo: requestData.mobileNo,
+                memberEmailId: requestData.email,
+                username: requestData.username,
+                password: requestData.password,
                 registerDate: parseDate(requestData.registerDate),
                 dateOfBirth: parseDate(requestData.dateOfBirth),
                 confirmDate: parseDate(requestData.confirmDate),
+                libGenMembNo: requestData.libGenMembNo,
             };
             const response = await fetch(`${BaseURL}/api/general-members/${memberId}`, {
                 method: 'PUT',
@@ -212,39 +222,36 @@ const GeneralMember = () => {
                 },
                 body: JSON.stringify(payload),
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.json();
-                if (response.status === 409) {
-                    if (errorData.message.includes('username_UNIQUE')) {
-                        toast.error('Username already exists.');
-                    } else if (errorData.message.includes('useremail_UNIQUE')) {
-                        toast.error('Email already exists.');
-                    } else {
-                        toast.error(errorData.message);
-                    }
+                if (errorData.message.includes('username_UNIQUE')) {
+                    toast.error('Username already exists.');
+                } else if (errorData.message.includes('useremail_UNIQUE')) {
+                    toast.error('Email already exists.');
                 } else {
                     throw new Error(`Error editing general member: ${response.statusText}`);
                 }
-            } else {
-                const updatedGeneralMemberData = await response.json();
-                const updatedGeneralMembers = generalMember.map(member => {
-                    if (member.memberId === updatedGeneralMemberData.data.memberId) {
-                        return updatedGeneralMemberData.data;
-                    }
-                    return member;
-                });
-                setGeneralMember(updatedGeneralMembers);
-                setShowEditGeneralMemberModal(false);
-                toast.success('General member edited successfully.');
-                fetchGeneralMembers();
+                return;
             }
+    
+            const updatedGeneralMemberData = await response.json();
+            const updatedGeneralMembers = generalMember.map(member => {
+                if (member.memberId === updatedGeneralMemberData.data.memberId) {
+                    return updatedGeneralMemberData.data;
+                }
+                return member;
+            });
+            setGeneralMember(updatedGeneralMembers);
+            setShowEditGeneralMemberModal(false);
+            toast.success('General member edited successfully.');
+            fetchGeneralMembers();
         } catch (error) {
             console.error(error);
             toast.error('Error editing general member. Please try again later.');
         }
     };
-
+    
 
     //delete api
     const deleteGeneralMember = async () => {
