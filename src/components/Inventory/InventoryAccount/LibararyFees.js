@@ -22,7 +22,7 @@ const LibraryFees = () => {
         fetchLibraryFees();
     }, []);
 
-    //get api
+    //get libarary fee
     const fetchLibraryFees = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/fees`, {
@@ -41,13 +41,13 @@ const LibraryFees = () => {
         }
     };
 
-    // Open modal and set selected fee
+    //edit function
     const handleUpdateClick = (fee) => {
         setSelectedFee(fee);
         setShowModal(true);
     };
 
-    // Handle form submission update
+    //post api
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -71,7 +71,7 @@ const LibraryFees = () => {
         }
     };
 
-    // Handle input change
+    // input change
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setSelectedFee({ ...selectedFee, [name]: value });
@@ -110,6 +110,7 @@ const LibraryFees = () => {
                 </Container>
             </div>
 
+            {/* edit update modal */}
             <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Update Library Fee</Modal.Title>
@@ -147,6 +148,7 @@ const LibraryFees = () => {
                     )}
                 </Modal.Body>
             </Modal>
+            
         </div>
     );
 };

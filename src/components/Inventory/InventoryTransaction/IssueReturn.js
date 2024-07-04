@@ -17,6 +17,7 @@ const formatDateToDDMMYYYY = (dateStr) => {
     return `${day}-${month}-${year}`;
 };
 
+//date format
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const day = String(date.getDate()).padStart(2, '0');
@@ -24,7 +25,6 @@ const formatDate = (dateStr) => {
     const year = date.getFullYear();
     return `${year}-${month}-${day}`;
 };
-
 
 
 const IssueReturn = () => {

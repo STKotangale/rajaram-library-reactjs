@@ -9,7 +9,8 @@ import './AuthCSS/PermanentGeneralMember.css';
 
 
 const GeneralMember = () => {
-
+     //get
+     const [generalMember, setGeneralMember] = useState([]);
     //search function
     const [filteredMember, setFilteredMember] = useState([]);
     const [firstNameQuery, setFirstNameQuery] = useState("");
@@ -23,8 +24,6 @@ const GeneralMember = () => {
         ));
         setCurrentPage(1);
     }, [firstNameQuery, middleNameQuery, lastNameQuery]);
-    //get
-    const [generalMember, setGeneralMember] = useState([]);
     //add
     const [showAddGeneralMemberModal, setShowAddGeneralMemberModal] = useState(false);
     const [newGeneralMember, setNewGeneralMember] = useState({
@@ -61,7 +60,7 @@ const GeneralMember = () => {
         fetchGeneralMembers();
     }, []);
 
-    //get api
+    //get general member
     const fetchGeneralMembers = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/general-members`, {
@@ -72,9 +71,6 @@ const GeneralMember = () => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            // const data = await response.json();
-            // setGeneralMember(data.data);
-            // setFilteredMember(data.data);
             const data = await response.json();
             const sortedData = data.data.map(member => ({
                 ...member,
@@ -111,7 +107,6 @@ const GeneralMember = () => {
     };
 
     //post function
-
     //date format dd-mm-yyyy
     const parseDate = (date) => {
         const [day, month, year] = date.split('-');
@@ -138,14 +133,13 @@ const GeneralMember = () => {
                 },
                 body: JSON.stringify(payload),
             });
-
             if (!response.ok) {
                 const errorData = await response.json();
                 if (response.status === 409) {
                     if (errorData.message.includes('username_UNIQUE')) {
-                        toast.error('Username already exists.');
+                        toast.info('Username already exists.');
                     } else if (errorData.message.includes('useremail_UNIQUE')) {
-                        toast.error('Email already exists.');
+                        toast.info('Email already exists.');
                     } else {
                         toast.error(errorData.message);
                     }
@@ -161,13 +155,11 @@ const GeneralMember = () => {
                 fetchGeneralMembers();
             }
         } catch (error) {
-            console.error(error);
             toast.error('Error adding general member. Please try again later.');
         }
     };
 
     //edit function
-
     //date format for edit
     const formatDate = (date) => {
         if (!date) return '';
@@ -190,6 +182,7 @@ const GeneralMember = () => {
         }
     };
 
+    //edit api
     const editGeneralMember = async (e) => {
         e.preventDefault();
         try {
@@ -222,19 +215,17 @@ const GeneralMember = () => {
                 },
                 body: JSON.stringify(payload),
             });
-    
             if (!response.ok) {
                 const errorData = await response.json();
                 if (errorData.message.includes('username_UNIQUE')) {
-                    toast.error('Username already exists.');
+                    toast.info('Username already exists.');
                 } else if (errorData.message.includes('useremail_UNIQUE')) {
-                    toast.error('Email already exists.');
+                    toast.info('Email already exists.');
                 } else {
                     throw new Error(`Error editing general member: ${response.statusText}`);
                 }
                 return;
             }
-    
             const updatedGeneralMemberData = await response.json();
             const updatedGeneralMembers = generalMember.map(member => {
                 if (member.memberId === updatedGeneralMemberData.data.memberId) {
@@ -247,34 +238,37 @@ const GeneralMember = () => {
             toast.success('General member edited successfully.');
             fetchGeneralMembers();
         } catch (error) {
-            console.error(error);
             toast.error('Error editing general member. Please try again later.');
         }
     };
-    
 
-    //delete api
-    const deleteGeneralMember = async () => {
-        try {
-            const response = await fetch(`${BaseURL}/api/general-members/${selectedGeneralMemberId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                },
-            });
-            if (!response.ok) {
-                throw new Error(`Error deleting general member: ${response.statusText}`);
+   // Delete API
+const deleteGeneralMember = async () => {
+    try {
+        const response = await fetch(`${BaseURL}/api/general-members/${selectedGeneralMemberId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+            },
+        });
+
+        const responseData = await response.json();
+        if (!response.ok) {
+            if (response.status === 409) {
+                toast.info(`Cannot delete member: ${responseData.message}`);
+                return;
             }
-            setGeneralMember(generalMember.filter(generalMember => generalMember.id !== selectedGeneralMemberId));
-            setShowDeleteConfirmation(false);
-            toast.success('General member deleted successfully.');
-            fetchGeneralMembers();
-
-        } catch (error) {
-            console.error(error);
-            toast.error('Error deleting general member. Please try again later.');
+            throw new Error(`Error deleting general member: ${responseData.message || response.statusText}`);
         }
-    };
+        setGeneralMember(generalMember.filter(member => member.id !== selectedGeneralMemberId));
+        setShowDeleteConfirmation(false);
+        toast.success('General member deleted successfully.');
+        fetchGeneralMembers();
+    } catch (error) {
+        toast.error('Error deleting general member. Please try again later.');
+    }
+};
+
 
     //view
     const handleViewOpenGeneralMember = (member) => {
@@ -311,7 +305,6 @@ const GeneralMember = () => {
                     <Button onClick={() => setShowAddGeneralMemberModal(true)} className="button-color">
                         Add General Member
                     </Button>
-
                     <div className="d-flex">
                         <Form.Control
                             type="text"
@@ -335,7 +328,6 @@ const GeneralMember = () => {
                             className="border border-success"
                         />
                     </div>
-
                 </div>
                 <div className='mt-3 table-container-general-member-1'>
                     <div className="table-responsive table-height">
@@ -429,7 +421,6 @@ const GeneralMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newGeneralMemberMobileNo">
                                     <Form.Label>Mobile Number</Form.Label>
@@ -453,8 +444,8 @@ const GeneralMember = () => {
                                     <Form.Control
                                         type="text"
                                         placeholder="Aadhar Number"
-                                        maxLength={10}
-                                        pattern="\d{10}"
+                                        maxLength={12}
+                                        pattern="\d{12}"
                                         value={newGeneralMember.adharCard}
                                         onChange={(e) => {
                                             const value = e.target.value;
@@ -476,7 +467,6 @@ const GeneralMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newGeneralMemberEducation">
                                     <Form.Label> Education</Form.Label>
@@ -509,7 +499,6 @@ const GeneralMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newGeneralMemberDateOfBirth">
                                     <Form.Label>Date Of Birth</Form.Label>
@@ -539,7 +528,6 @@ const GeneralMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newGeneralMemberlibParMembNo">
                                     <Form.Label>Libaray Member Number </Form.Label>
@@ -670,7 +658,6 @@ const GeneralMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedGeneralMemberEducation">
                                     <Form.Label>Education</Form.Label>
@@ -703,7 +690,6 @@ const GeneralMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedGeneralMemberDateOfBirth">
                                     <Form.Label>Date Of Birth</Form.Label>
@@ -733,7 +719,6 @@ const GeneralMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newGeneralMemberlibParMembNo">
                                     <Form.Label>Libaray Member No </Form.Label>
@@ -764,7 +749,6 @@ const GeneralMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <div className='d-flex justify-content-end'>
                                 <Button className='button-color' type="submit">
                                     Update
@@ -816,7 +800,6 @@ const GeneralMember = () => {
                                         <Form.Control type="text" readOnly defaultValue={viewGeneralMemberData.lastName} />
                                     </Form.Group>
                                 </Row>
-
                                 <Row className="mb-3">
                                     <Form.Group as={Col} lg={4} className="mb-3">
                                         <Form.Label>Mobile No</Form.Label>
@@ -828,10 +811,9 @@ const GeneralMember = () => {
                                     </Form.Group>
                                     <Form.Group as={Col} lg={4} className="mb-3">
                                         <Form.Label>Email</Form.Label>
-                                        <Form.Control type="email" readOnly defaultValue={viewGeneralMemberData.useremail} />
+                                        <Form.Control type="email" readOnly defaultValue={viewGeneralMemberData.email} />
                                     </Form.Group>
                                 </Row>
-
                                 <Row className="mb-3">
                                     <Form.Group as={Col} lg={4} className="mb-3">
                                         <Form.Label>Education</Form.Label>
@@ -846,7 +828,6 @@ const GeneralMember = () => {
                                         <Form.Control type="text" readOnly defaultValue={viewGeneralMemberData.memberAddress} />
                                     </Form.Group>
                                 </Row>
-
                                 <Row className="mb-3">
                                     <Form.Group as={Col} lg={4} className="mb-3">
                                         <Form.Label>Date of Birth</Form.Label>
@@ -861,7 +842,6 @@ const GeneralMember = () => {
                                         <Form.Control type="text" readOnly defaultValue={viewGeneralMemberData.confirmDate} />
                                     </Form.Group>
                                 </Row>
-
                                 <Row className="mb-3">
                                     <Form.Group as={Col} lg={4} className="mb-3">
                                         <Form.Label>Libaray Member No </Form.Label>

@@ -8,7 +8,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import './AuthCSS/PermanentGeneralMember.css';
 
 const PermanentMember = () => {
-
     //get
     const [permanentMember, setPermanentMember] = useState([]);
     //search
@@ -23,7 +22,7 @@ const PermanentMember = () => {
             member.lastName.toLowerCase().includes(lastNameQuery.toLowerCase())
         ));
         setCurrentPage(1);
-    }, [firstNameQuery, middleNameQuery, lastNameQuery, permanentMember]);
+    }, [firstNameQuery, middleNameQuery, lastNameQuery]);
     //post
     const [showAddPermanentMemberModal, setShowAddPermanentMemberModal] = useState(false);
     const [newPermanentMember, setNewPermanentMember] = useState({
@@ -58,7 +57,7 @@ const PermanentMember = () => {
         fetchPermanentMembers();
     }, []);
 
-    //get
+    //get parmenant member
     const fetchPermanentMembers = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/permanent-members`, {
@@ -69,9 +68,6 @@ const PermanentMember = () => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            // const data = await response.json();
-            // setPermanentMember(data.data);
-            // setFilteredMember(data.data);
             const data = await response.json();
             const sortedData = data.data.map(member => ({
                 ...member,
@@ -105,12 +101,14 @@ const PermanentMember = () => {
     };
 
 
+    //add function
     // date format dd - mm - yyyy
     const parseDate = (date) => {
         if (!date) return '';
         const [day, month, year] = date.split('-');
         return `${year}-${month}-${day}`;
     };
+    
     //post api
     const addPermanentMember = async (e) => {
         e.preventDefault();
@@ -370,7 +368,6 @@ const PermanentMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newPermanentMemberMobileNo">
                                     <Form.Label>Mobile Number</Form.Label>
@@ -417,7 +414,6 @@ const PermanentMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newPermanentMemberEducation">
                                     <Form.Label> Education</Form.Label>
@@ -450,7 +446,6 @@ const PermanentMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="newPermanentMemberDateOfBirth">
                                     <Form.Label>Date Of Birth</Form.Label>
@@ -492,7 +487,6 @@ const PermanentMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <div className='d-flex justify-content-end'>
                                 <Button className='button-color' type="submit">
                                     Submit
@@ -544,7 +538,6 @@ const PermanentMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedPermanentMemberMobileNo">
                                     <Form.Label>Mobile Number</Form.Label>
@@ -591,7 +584,6 @@ const PermanentMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedPermanentMemberEducation">
                                     <Form.Label>Education</Form.Label>
@@ -625,7 +617,6 @@ const PermanentMember = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group className="mb-3" lg={4} as={Col} controlId="editedPermanentMemberDateOfBirth">
                                     <Form.Label>Date Of Birth</Form.Label>
@@ -718,7 +709,6 @@ const PermanentMember = () => {
                                         <Form.Control type="text" readOnly defaultValue={viewPermanentMemberData.lastName} />
                                     </Form.Group>
                                 </Row>
-
                                 <Row className="mb-3">
                                     <Form.Group as={Col} lg={4} className="mb-3">
                                         <Form.Label>Mobile Number</Form.Label>
@@ -733,7 +723,6 @@ const PermanentMember = () => {
                                         <Form.Control type="email" readOnly defaultValue={viewPermanentMemberData.emailId} />
                                     </Form.Group>
                                 </Row>
-
                                 <Row className="mb-3">
                                     <Form.Group as={Col} lg={4} className="mb-3">
                                         <Form.Label>Education</Form.Label>
@@ -748,7 +737,6 @@ const PermanentMember = () => {
                                         <Form.Control type="text" readOnly defaultValue={viewPermanentMemberData.memberAddress} />
                                     </Form.Group>
                                 </Row>
-
                                 <Row className="mb-3">
                                     <Form.Group as={Col} lg={4} className="mb-3">
                                         <Form.Label>Date of Birth</Form.Label>

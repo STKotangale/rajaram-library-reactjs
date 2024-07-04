@@ -9,7 +9,7 @@ import { useAuth } from '../../Auth/AuthProvider';
 import '../InventoryTransaction/CSS/Purchase.css';
 import { useNavigate } from 'react-router-dom';
 
-// Utility function to convert date to dd-mm-yyyy format
+// date format
 const formatDateToDDMMYYYY = (dateStr) => {
     const date = new Date(dateStr);
     const day = String(date.getDate()).padStart(2, '0');
@@ -18,6 +18,7 @@ const formatDateToDDMMYYYY = (dateStr) => {
     return `${day}-${month}-${year}`;
 };
 
+//date format
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const day = String(date.getDate()).padStart(2, '0');
@@ -25,8 +26,6 @@ const formatDate = (dateStr) => {
     const year = date.getFullYear();
     return `${year}-${month}-${day}`;
 };
-
-
 
 const BookLost = () => {
     // get book lost
@@ -348,6 +347,7 @@ const BookLost = () => {
         setShowDeleteModal(true);
     };
 
+    //delete api
     const confirmDelete = async () => {
         if (!deleteStockId) return;
         const selectedGroup = bookLost.find(item => item.stockId === deleteStockId);
@@ -443,7 +443,7 @@ const BookLost = () => {
                                     type="date"
                                     value={endDate}
                                     onChange={handleEndDateChange}
-                                    min={startDate} 
+                                    min={startDate}
                                     className="custom-date-picker small-input border"
                                 />
                             </InputGroup>

@@ -17,7 +17,7 @@ const BookDetailsTable = () => {
             member.bookName.toLowerCase().includes(bookNameQuery.toLowerCase()) &&
             (accessionNoQuery ? (member.accessionNo && member.accessionNo.toLowerCase().includes(accessionNoQuery.toLowerCase())) : true)
         ));
-        setCurrentPage(1); 
+        setCurrentPage(1);
     }, [bookNameQuery, accessionNoQuery]);
 
     //get book purchase
@@ -37,7 +37,11 @@ const BookDetailsTable = () => {
     //get api- all purchase book details
     const fetchBookDetails = async () => {
         try {
-            const response = await fetch(`${BaseURL}/api/bookdetails`);
+            const response = await fetch(`${BaseURL}/api/bookdetails`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
             if (!response.ok) {
                 throw new Error('Failed to fetch book details');
             }
@@ -86,11 +90,11 @@ const BookDetailsTable = () => {
                 accessionNo: selectedBook.accessionNo,
                 copyNo: selectedBook.copyNo
             };
-
             const response = await fetch(`${BaseURL}/api/bookdetails/update/book-details/${selectedBook.bookDetailId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(updatedBookDetails),
             });

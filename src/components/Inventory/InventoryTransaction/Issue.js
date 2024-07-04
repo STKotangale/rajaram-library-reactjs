@@ -199,7 +199,11 @@ const BookIssue = () => {
     //get book details is updated with accession number
     const fetchBookDetails = async () => {
         try {
-            const response = await fetch(`${BaseURL}/api/bookdetails/copyno`);
+            const response = await fetch(`${BaseURL}/api/bookdetails/copyno`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
             if (!response.ok) {
                 throw new Error(`Error fetching book details: ${response.statusText}`);
             }

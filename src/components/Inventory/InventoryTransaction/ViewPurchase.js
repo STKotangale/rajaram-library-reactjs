@@ -168,7 +168,7 @@ const ViewPurchase = () => {
         setShowDeleteConfirmation(false);
     };
 
-    //delete api
+    // Delete API
     const handleDeleteConfirm = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/stock/${selectedPurchase.stockId}`, {
@@ -177,15 +177,20 @@ const ViewPurchase = () => {
                     'Authorization': `Bearer ${accessToken}`
                 }
             });
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`Error deleting purchase: ${response.statusText}`);
+                if (response.status === 409) {
+                    toast.info(`Cannot delete purchase: ${responseData.message}`);
+                    return;
+                }
+                throw new Error(`Error deleting purchase: ${responseData.message || response.statusText}`);
             }
             toast.success('Purchase deleted successfully.');
             setShowDeleteConfirmation(false);
             fetchSessionDate();
             fetchStartDateEndDate(sessionStartDate.sessionFromDt, sessionStartDate.currentDate);
         } catch (error) {
-            console.error(error);
+            console.error("Error during purchase deletion:", error);
             toast.error('Error deleting purchase. Please try again later.');
         }
     };
@@ -256,7 +261,7 @@ const ViewPurchase = () => {
                                         type="date"
                                         value={endDate}
                                         onChange={handleEndDateChange}
-                                        min={startDate} 
+                                        min={startDate}
                                         className="custom-date-picker small-input border"
                                     />
                                 </InputGroup>

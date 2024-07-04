@@ -9,8 +9,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import './AuthCSS/User.css';
 
 const User = () => {
-    //get
-    const [users, setUsers] = useState([]);
     //search
     const [filtered, setFiltered] = useState([]);
     const [dataQuery, setDataQuery] = useState("");
@@ -20,6 +18,8 @@ const User = () => {
         ));
         setCurrentPage(1);
     }, [dataQuery]);
+    //get
+    const [users, setUsers] = useState([]);
     //add
     const [showAddUserModal, setShowAddUserModal] = useState(false);
     const [newUserName, setNewUserName] = useState('');
@@ -42,7 +42,7 @@ const User = () => {
         fetchUsers();
     }, []);
 
-    // Fetch users API call
+    // get user
     const fetchUsers = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/auth/users`, {
@@ -71,7 +71,7 @@ const User = () => {
         setNewMobileNumber('');
     };
 
-    // Add user API call
+    // add / post 
     const addUser = async (e) => {
         e.preventDefault();
         try {
@@ -97,13 +97,12 @@ const User = () => {
                 }),
             });
             const responseData = await response.json();
-
             if (!response.ok) {
                 if (response.status === 400) {
                     if (responseData.message.includes('Username is already taken')) {
-                        toast.error('Username is already exists.');
+                        toast.info('Username is already exists.');
                     } else if (responseData.message.includes('Email is already in use')) {
-                        toast.error('Email is already exists.');
+                        toast.info('Email is already exists.');
                     } else {
                         toast.error('Error adding User. Please try again later.');
                     }
@@ -112,7 +111,6 @@ const User = () => {
                 }
                 return;
             }
-
             const newUser = responseData;
             setUsers([...users, newUser]);
             toast.success('User added successfully.');
@@ -125,11 +123,11 @@ const User = () => {
         }
     };
 
+    //edit api
     const editUser = async (e) => {
         e.preventDefault();
         try {
             const mobileNo = parseInt(newMobileNumber, 10);
-    
             const response = await fetch(`${BaseURL}/api/auth/${selectedUserId}`, {
                 method: 'PUT',
                 headers: {
@@ -146,9 +144,9 @@ const User = () => {
             if (!response.ok) {
                 const errorData = await response.json();
                 if (errorData.message.includes('username_UNIQUE')) {
-                    toast.error('Username already exists.');
+                    toast.info('Username already exists.');
                 } else if (errorData.message.includes('useremail_UNIQUE')) {
-                    toast.error('Email already exists.');
+                    toast.info('Email already exists.');
                 } else {
                     throw new Error(`Error editing User: ${response.statusText}`);
                 }
@@ -167,12 +165,11 @@ const User = () => {
             resetFormFields();
             fetchUsers();
         } catch (error) {
-            console.error(error);
             toast.error('Error editing User. Please try again later.');
         }
     };
-    
-    // Delete user API call
+
+    // Delete api
     const deleteUser = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/auth/${selectedUserId}`, {
@@ -200,8 +197,7 @@ const User = () => {
         setShowViewModal(true);
     };
 
-
-    // Pagination state
+    // Pagination 
     const [currentPage, setCurrentPage] = useState(1);
     const perPage = 8;
     const handleNextPage = () => {
@@ -328,7 +324,6 @@ const User = () => {
                                     required
                                 />
                             </Form.Group>
-
                             <Form.Group className="mb-3" controlId="newUserPassword">
                                 <Form.Label>Password</Form.Label>
                                 <Form.Control
@@ -465,6 +460,7 @@ const User = () => {
                         </Form>
                     </Modal.Body>
                 </Modal>
+                
             </Container>
         </div>
     );
