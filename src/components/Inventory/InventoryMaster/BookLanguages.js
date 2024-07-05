@@ -7,18 +7,15 @@ import { Container, Table, Pagination, Modal, Button, Form, Col, Row } from 'rea
 import { toast } from 'react-toastify';
 
 const BookLanguages = () => {
-
+    //search
     const [filtered, setFiltered] = useState([]);
     const [dataQuery, setDataQuery] = useState("");
-
     useEffect(() => {
         setFiltered(bookLanguages.filter(member =>
             member.bookLangName.toLowerCase().includes(dataQuery.toLowerCase())
         ));
-        setCurrentPage(1); 
+        setCurrentPage(1);
     }, [dataQuery]);
-    
-
     //get all book lang
     const [bookLanguages, setBookLanguages] = useState([]);
     //add new book lang
@@ -37,20 +34,19 @@ const BookLanguages = () => {
     const { username, accessToken } = useAuth();
     const BaseURL = process.env.REACT_APP_BASE_URL;
 
-    //get username and access token
-    useEffect(() => {
-
-    }, [username, accessToken]);
-
 
     useEffect(() => {
         fetchBookLanguages();
-    }, []);
+    }, [username, accessToken]);
 
-    // get api
+    // get book languages
     const fetchBookLanguages = async () => {
         try {
-            const response = await fetch(`${BaseURL}/api/language/book-languages`);
+            const response = await fetch(`${BaseURL}/api/language/book-languages`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -83,16 +79,20 @@ const BookLanguages = () => {
                 },
                 body: JSON.stringify(payload),
             });
-
-            if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
-            const data = await response.json();
-            setBookLanguages([...bookLanguages, data.data]);
+            const responseData = await response.json();
+            if (!response.ok) {
+                if (response.status === 409) {
+                    toast.info(`Cannot add language: ${responseData.message}`);
+                    return;
+                }
+                throw new Error(`Error adding language: ${responseData.message || response.statusText}`);
+            }
+            setBookLanguages([...bookLanguages, responseData.data]);
             toast.success('Book language added successfully.');
             setShowAddLanguage(false);
             resetFormFields();
             fetchBookLanguages();
         } catch (error) {
-            console.error('Error adding book language:', error.message);
             toast.error('Error adding book language. Please try again later.');
         }
     };
@@ -107,12 +107,16 @@ const BookLanguages = () => {
         setShowEditModal(true);
     };
 
-    // Function to handle changes in the edit form
+    //edit function
     const handleEditLanguageChange = (e) => {
         setEditableLanguage({ ...editableLanguage, bookLangName: e.target.value });
     };
 
-    // Function to submit the edited language data
+    const handleCloseEditModal = () => {
+        setShowEditModal(false);
+    };
+
+    // edit api
     const handleEditLanguageSubmit = async (event) => {
         event.preventDefault();
         try {
@@ -124,13 +128,15 @@ const BookLanguages = () => {
                 },
                 body: JSON.stringify({ bookLangName: editableLanguage.bookLangName })
             });
-
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                if (response.status === 409) {
+                    toast.info(`Cannot edit book: ${responseData.message}`);
+                    return;
+                }
+                throw new Error(`Error editing book: ${responseData.message || response.statusText}`);
             }
-
-            const updatedLanguage = await response.json();
-            const updatedLanguages = bookLanguages.map(lang => lang.bookLangId === updatedLanguage.data.bookLangId ? updatedLanguage.data : lang);
+            const updatedLanguages = bookLanguages.map(lang => lang.bookLangId === responseData.data.bookLangId ? responseData.data : lang);
             setBookLanguages(updatedLanguages);
             toast.success('Book language edited successfully.');
             setShowEditModal(false);
@@ -141,9 +147,15 @@ const BookLanguages = () => {
         }
     };
 
+    //delete function
+    const handleShowDeleteConfirmation = (languageId) => {
+        setSelectedLanguageId(languageId);
+        setShowDeleteConfirmation(true);
+    };
 
-    const handleCloseEditModal = () => {
-        setShowEditModal(false);
+    const handleCloseDeleteConfirmation = () => {
+        setShowDeleteConfirmation(false);
+        setSelectedLanguageId(null);
     };
 
     //delete api
@@ -167,21 +179,9 @@ const BookLanguages = () => {
             setShowDeleteConfirmation(false);
             fetchBookLanguages();
         } catch (error) {
-            toast.error(error.message || 'Error delete book language. Please try again later.');
+            toast.info(error.message || 'Error delete book language. Please try again later.');
         }
     };
-
-    const handleShowDeleteConfirmation = (languageId) => {
-        setSelectedLanguageId(languageId);
-        setShowDeleteConfirmation(true);
-    };
-
-    const handleCloseDeleteConfirmation = () => {
-        setShowDeleteConfirmation(false);
-        setSelectedLanguageId(null);
-    };
-
-
 
     //view function
     const handleShowViewModal = (language) => {
@@ -189,39 +189,30 @@ const BookLanguages = () => {
         setShowViewModal(true);
     };
 
-
     //pagination function
     const [currentPage, setCurrentPage] = useState(1);
     const perPage = 8;
     const totalPages = Math.ceil(filtered.length / perPage);
-
     const handleNextPage = () => {
         setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
     };
-
     const handlePrevPage = () => {
         setCurrentPage(prevPage => Math.max(prevPage - 1, 1));
     };
-
-    // First and last page navigation functions
     const handleFirstPage = () => {
         setCurrentPage(1);
     };
-
     const handleLastPage = () => {
         setCurrentPage(totalPages);
     };
-
     const indexOfLastBookType = currentPage * perPage;
     const indexOfNumber = indexOfLastBookType - perPage;
     const currentData = filtered.slice(indexOfNumber, indexOfLastBookType);
 
-
-
     return (
         <div className="main-content">
             <Container className='small-screen-table'>
-            <div className='mt-3 d-flex justify-content-between'>
+                <div className='mt-3 d-flex justify-content-between'>
                     <Button onClick={() => setShowAddLanguage(true)} className="button-color">
                         Add Book language
                     </Button>
@@ -235,10 +226,8 @@ const BookLanguages = () => {
                         />
                     </div>
                 </div>
-
                 <div className='mt-3'>
                     <div className="table-responsive table-height">
-
                         <Table striped bordered hover className='mt-3'>
                             <thead>
                                 <tr>
@@ -262,7 +251,6 @@ const BookLanguages = () => {
                                         </td>
                                     </tr>
                                 ))}
-
                             </tbody>
                         </Table>
                     </div>
@@ -276,7 +264,7 @@ const BookLanguages = () => {
                 </div>
 
                 {/* add book insert type */}
-                <Modal show={showAddLanguage} onHide={() => {setShowAddLanguage(false); resetFormFields()}}>
+                <Modal show={showAddLanguage} onHide={() => { setShowAddLanguage(false); resetFormFields() }}>
                     <Modal.Header closeButton>
                         <Modal.Title>Add New Book Language</Modal.Title>
                     </Modal.Header>

@@ -150,7 +150,6 @@ const MonthlyMembershipFee = () => {
         }
     };
 
-
     //input change
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -224,7 +223,7 @@ const MonthlyMembershipFee = () => {
         }
     };
 
-
+//reset
     const resetField = () => {
         setSelectedMemberName("");
         setSelectedMemberLibNo('');
@@ -533,7 +532,6 @@ const MonthlyMembershipFee = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group as={Col}>
                                     <Form.Label>From Date</Form.Label>
@@ -559,7 +557,6 @@ const MonthlyMembershipFee = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <div className="table-responsive">
                                 <div>
                                     <h4>Fee Details</h4>
@@ -599,7 +596,6 @@ const MonthlyMembershipFee = () => {
                                     </tbody>
                                 </Table>
                             </div>
-
                             <Row className="mb-3">
                                 <Form.Group as={Col}>
                                     <Form.Label>Fee Type</Form.Label>
@@ -661,7 +657,6 @@ const MonthlyMembershipFee = () => {
                                     </Row>
                                 </>
                             )}
-
                             <Row className="mb-3">
                                 <Form.Group as={Col}>
                                     <Form.Label>Description</Form.Label>
@@ -970,7 +965,6 @@ const MonthlyMembershipFee = () => {
                                     />
                                 </Form.Group>
                             </Row>
-
                             <Row className="mb-3">
                                 <Form.Group as={Col}>
                                     <Form.Label>Member Name</Form.Label>
@@ -1010,7 +1004,6 @@ const MonthlyMembershipFee = () => {
                                     </tbody>
                                 </Table>
                             </div>
-
                             <Row className="mb-3">
                                 <Form.Group as={Col}>
                                     <Form.Label>Fee Type</Form.Label>
@@ -1083,6 +1076,7 @@ const MonthlyMembershipFee = () => {
                     </Modal.Body>
                 </div>
             </Modal>
+            
         </div>
     );
 };

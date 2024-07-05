@@ -7,17 +7,15 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const BookPublication = () => {
-
+    //search
     const [filtered, setFiltered] = useState([]);
     const [dataQuery, setDataQuery] = useState("");
-
     useEffect(() => {
         setFiltered(bookPublication.filter(member =>
             member.publicationName.toLowerCase().includes(dataQuery.toLowerCase())
         ));
         setCurrentPage(1);
     }, [dataQuery]);
-
     //get
     const [bookPublication, setBookPublication] = useState([]);
     //add
@@ -94,17 +92,20 @@ const BookPublication = () => {
                 },
                 body: JSON.stringify(newBookPublication),
             });
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`Error adding book publication: ${response.statusText}`);
+                if (response.status === 409) {
+                    toast.info(`Cannot add publication: ${responseData.message}`);
+                    return;
+                }
+                throw new Error(`Error adding publication: ${responseData.message || response.statusText}`);
             }
-            const newPublication = await response.json();
-            setBookPublication([...bookPublication, newPublication.data]);
+            setBookPublication([...bookPublication, responseData.data]);
             setShowAddBookPublicationModal(false);
             toast.success('Book publication added successfully.');
             resetFormFields();
             fetchBookPublication();
         } catch (error) {
-            console.error(error);
             toast.error('Error adding book publication. Please try again later.');
         }
     };
@@ -121,13 +122,17 @@ const BookPublication = () => {
                 },
                 body: JSON.stringify(newBookPublication),
             });
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`Error editing book publication: ${response.statusText}`);
+                if (response.status === 409) {
+                    toast.info(`Cannot edit book: ${responseData.message}`);
+                    return;
+                }
+                throw new Error(`Error editing book: ${responseData.message || response.statusText}`);
             }
-            const updatedPublicationData = await response.json();
             const updatedPublication = bookPublication.map(publication => {
                 if (publication.id === selectedBookPublicationId) {
-                    return updatedPublicationData.data;
+                    return responseData.data;
                 }
                 return publication;
             });
@@ -164,7 +169,7 @@ const BookPublication = () => {
             fetchBookPublication();
         } catch (error) {
             console.error(error);
-            toast.error(error.message || 'Error deleting book publication. Please try again later.');
+            toast.info(error.message || 'Error deleting book publication. Please try again later.');
         }
     };
 
@@ -174,38 +179,28 @@ const BookPublication = () => {
         setShowViewModal(true);
     };
 
-
     //pagination function
     const [currentPage, setCurrentPage] = useState(1);
     const perPage = 8;
     const totalPages = Math.ceil(filtered.length / perPage);
-
     const handleNextPage = () => {
         setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
     };
-
     const handlePrevPage = () => {
         setCurrentPage(prevPage => Math.max(prevPage - 1, 1));
     };
-
-    // First and last page navigation functions
     const handleFirstPage = () => {
         setCurrentPage(1);
     };
-
     const handleLastPage = () => {
         setCurrentPage(totalPages);
     };
-
     const indexOfLastBookType = currentPage * perPage;
     const indexOfNumber = indexOfLastBookType - perPage;
     const currentData = filtered.slice(indexOfNumber, indexOfLastBookType);
 
-
-
     return (
         <div className="main-content">
-
             <Container className='small-screen-table'>
                 <div className='mt-3 d-flex justify-content-between'>
                     <Button onClick={() => setShowAddBookPublicationModal(true)} className="button-color">
@@ -221,10 +216,8 @@ const BookPublication = () => {
                         />
                     </div>
                 </div>
-
                 <div className='mt-3'>
                     <div className="table-responsive table-height">
-
                         <Table striped bordered hover>
                             <thead>
                                 <tr>
@@ -319,6 +312,8 @@ const BookPublication = () => {
                                     type="tel"
                                     placeholder="Contact number 1"
                                     value={newBookPublication.contactNo1}
+                                    maxLength={10}
+                                    pattern="\d{10}"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (value.length <= 10 && /^\d*$/.test(value)) {
@@ -333,6 +328,8 @@ const BookPublication = () => {
                                     type="tel"
                                     placeholder="Contact number 2"
                                     value={newBookPublication.contactNo2}
+                                    maxLength={10}
+                                    pattern="\d{10}"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (value.length <= 10 && /^\d*$/.test(value)) {
@@ -400,6 +397,8 @@ const BookPublication = () => {
                                     type="tel"
                                     placeholder="Contact number 1"
                                     value={newBookPublication.contactNo1}
+                                    maxLength={10}
+                                    pattern="\d{10}"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (value.length <= 10 && /^\d*$/.test(value)) {
@@ -414,6 +413,8 @@ const BookPublication = () => {
                                     type="tel"
                                     placeholder="Contact number 2"
                                     value={newBookPublication.contactNo2}
+                                    maxLength={10}
+                                    pattern="\d{10}"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (value.length <= 10 && /^\d*$/.test(value)) {

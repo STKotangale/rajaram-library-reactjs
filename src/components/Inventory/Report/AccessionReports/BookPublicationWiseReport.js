@@ -27,7 +27,11 @@ const BookPublicationWiseReport = () => {
     //get api
     const fetchPublications = async () => {
         try {
-            const response = await fetch(`${BaseURL}/api/book-publications`);
+            const response = await fetch(`${BaseURL}/api/book-publications`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
             if (!response.ok) {
                 throw new Error(`Error fetching publications: ${response.statusText}`);
             }

@@ -27,7 +27,11 @@ const BookAuthorWiseReport = () => {
     //get api
     const fetchAuthors = async () => {
         try {
-            const response = await fetch(`${BaseURL}/api/book-authors`);
+            const response = await fetch(`${BaseURL}/api/book-authors`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
             if (!response.ok) {
                 throw new Error(`Error fetching authors: ${response.statusText}`);
             }

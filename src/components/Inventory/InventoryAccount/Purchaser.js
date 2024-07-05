@@ -135,18 +135,24 @@ const Purchaser = () => {
                     'Authorization': `Bearer ${accessToken}`,
                 },
             });
+            if (response.status === 409) {
+                const errorData = await response.json();
+                toast.info(`Cannot deleting ledger: ${errorData.message}`);
+                return;
+            }
             if (!response.ok) {
-                throw new Error(`Error deleting purchaser: ${response.statusText}`);
+                throw new Error(`Error deleting ledger: ${response.statusText}`);
             }
             setLedger(ledger.filter(item => item.ledgerID !== selectedLedgerId));
             setShowDeleteConfirmation(false);
-            toast.success('Purchaser deleted successfully.');
+            toast.success('Ledger deleted successfully.');
             fetchLedger();
         } catch (error) {
             console.error(error);
-            toast.error('Error deleting purchaser. Please try again later.');
+            toast.error('Error deleting ledger. Please try again later.');
         }
     };
+    
 
     //view function
     const handleShowViewModal = (ledger) => {

@@ -786,7 +786,7 @@ const MembershipFees = () => {
                             No
                         </Button>
                         <Button variant="danger" onClick={handleDelete}>
-                            Yes, Delete
+                            Yes
                         </Button>
                     </Modal.Footer>
                 </div>

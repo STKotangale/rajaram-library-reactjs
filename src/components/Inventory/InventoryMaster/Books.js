@@ -7,17 +7,15 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Books = () => {
-
+    //search
     const [filtered, setFiltered] = useState([]);
     const [dataQuery, setDataQuery] = useState("");
-
     useEffect(() => {
         setFiltered(books.filter(member =>
             member.bookName.toLowerCase().includes(dataQuery.toLowerCase())
         ));
         setCurrentPage(1);
     }, [dataQuery]);
-
     //get books
     const [books, setBooks] = useState([]);
     //add book
@@ -48,6 +46,13 @@ const Books = () => {
     const { accessToken } = useAuth();
     const BaseURL = process.env.REACT_APP_BASE_URL;
 
+    useEffect(() => {
+        fetchBooks();
+        fetchAuthors();
+        fetchPublications();
+        fetchBookTypes();
+        fetchBookLanguages();
+    }, []);
 
     //get api
     const fetchBooks = async () => {
@@ -70,13 +75,80 @@ const Books = () => {
         }
     };
 
-    useEffect(() => {
-        fetchBooks();
-        fetchAuthors();
-        fetchPublications();
-        fetchBookTypes();
-        fetchBookLanguages();
-    }, []);
+    // get authors 
+    const fetchAuthors = async () => {
+        try {
+            const response = await fetch(`${BaseURL}/api/book-authors`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Error fetching authors: ${response.statusText}`);
+            }
+            const data = await response.json();
+            setAuthors(data.data);
+        } catch (error) {
+            console.error(error);
+            toast.error('Error fetching authors. Please try again later.');
+        }
+    };
+
+    // get publications
+    const fetchPublications = async () => {
+        try {
+            const response = await fetch(`${BaseURL}/api/book-publications`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Error fetching publications: ${response.statusText}`);
+            }
+            const data = await response.json();
+            setPublications(data.data);
+        } catch (error) {
+            console.error(error);
+            toast.error('Error fetching publications. Please try again later.');
+        }
+    };
+
+    //get  book types
+    const fetchBookTypes = async () => {
+        try {
+            const response = await fetch(`${BaseURL}/api/booktype/book-types`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Error fetching book types: ${response.statusText}`);
+            }
+            const data = await response.json();
+            setBookTypes(data.data);
+        } catch (error) {
+            console.error(error);
+            toast.error('Error fetching book types. Please try again later.');
+        }
+    };
+
+    // get  languages
+    const fetchBookLanguages = async () => {
+        try {
+            const response = await fetch(`${BaseURL}/api/language/book-languages`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setBookLanguages(data.data);
+        } catch (error) {
+            console.error('Error fetching book languages:', error);
+        }
+    };
 
     // Reset form fields
     const resetFormFields = () => {
@@ -87,28 +159,31 @@ const Books = () => {
         setAddBookLangName('');
     };
 
-    // Handle add book form submission
+    //add or post api
     const addBook = async (e) => {
         e.preventDefault();
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                bookName: newBookName,
-                authorId: newBookAuthor,
-                publicationId: newBookPublication,
-                bookTypeId: newBookTypeName,
-                bookLangId: addBookLangName
-            }),
+        const reportData = {
+            bookName: newBookName,
+            authorId: newBookAuthor,
+            publicationId: newBookPublication,
+            bookTypeId: newBookTypeName,
+            bookLangId: addBookLangName
         };
         try {
-            const response = await fetch(`${BaseURL}/api/book/book`, requestOptions);
+            const response = await fetch(`${BaseURL}/api/book/book`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reportData),
+            });
             const responseData = await response.json();
-
             if (!response.ok) {
+                if (response.status === 409) {
+                    toast.info(`Cannot add book: ${responseData.message}`);
+                    return;
+                }
                 throw new Error(`Error adding book: ${responseData.message || response.statusText}`);
             }
             setBooks(books => [...books, responseData.data]);
@@ -117,15 +192,20 @@ const Books = () => {
             setShowAddBookModal(false);
             fetchBooks();
         } catch (error) {
-            console.error("Error during book addition:", error);
             toast.error('Error adding book. Please try again later.');
         }
     };
 
-
     // Edit api
     const editBook = async (e) => {
         e.preventDefault();
+        const reportData = {
+            bookName: newBookName,
+            authorId: newBookAuthor,
+            publicationId: newBookPublication,
+            bookTypeId: newBookTypeName,
+            bookLangId: addBookLangName
+        };
         try {
             const response = await fetch(`${BaseURL}/api/book/book/${selectedBookId}`, {
                 method: 'PUT',
@@ -133,21 +213,19 @@ const Books = () => {
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    bookName: newBookName,
-                    authorId: newBookAuthor,
-                    publicationId: newBookPublication,
-                    bookTypeId: newBookTypeName,
-                    bookLangId: addBookLangName
-                }),
+                body: JSON.stringify(reportData),
             });
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`Error editing book: ${response.statusText}`);
+                if (response.status === 409) {
+                    toast.info(`Cannot edit book: ${responseData.message}`);
+                    return;
+                }
+                throw new Error(`Error editing book: ${responseData.message || response.statusText}`);
             }
-            const updatedBookData = await response.json();
             const updatedBooks = books.map(book => {
                 if (book.bookId === selectedBookId) {
-                    return { ...book, ...updatedBookData.data };
+                    return { ...book, ...responseData.data };
                 }
                 return book;
             });
@@ -157,7 +235,6 @@ const Books = () => {
             resetFormFields();
             fetchBooks();
         } catch (error) {
-            console.error(error);
             toast.error('Error editing book. Please try again later.');
         }
     };
@@ -184,7 +261,7 @@ const Books = () => {
             fetchBooks();
         } catch (error) {
             console.error(error);
-            toast.error(error.message ||  'Error deleting book. Please try again later.');
+            toast.info(error.message || 'Error deleting book. Please try again later.');
         }
     };
 
@@ -194,103 +271,25 @@ const Books = () => {
         setShowViewModal(true);
     };
 
-
-    // Fetch authors 
-    const fetchAuthors = async () => {
-        try {
-            const response = await fetch(`${BaseURL}/api/book-authors`);
-            if (!response.ok) {
-                throw new Error(`Error fetching authors: ${response.statusText}`);
-            }
-            const data = await response.json();
-            setAuthors(data.data);
-        } catch (error) {
-            console.error(error);
-            toast.error('Error fetching authors. Please try again later.');
-        }
-    };
-
-    // fetch publications
-    const fetchPublications = async () => {
-        try {
-            const response = await fetch(`${BaseURL}/api/book-publications`);
-            if (!response.ok) {
-                throw new Error(`Error fetching publications: ${response.statusText}`);
-            }
-            const data = await response.json();
-            setPublications(data.data);
-        } catch (error) {
-            console.error(error);
-            toast.error('Error fetching publications. Please try again later.');
-        }
-    };
-
-
-
-
-    //get api
-    const fetchBookTypes = async () => {
-        try {
-            const response = await fetch(`${BaseURL}/api/booktype/book-types`, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
-            if (!response.ok) {
-                throw new Error(`Error fetching book types: ${response.statusText}`);
-            }
-            const data = await response.json();
-            setBookTypes(data.data);
-        } catch (error) {
-            console.error(error);
-            toast.error('Error fetching book types. Please try again later.');
-        }
-    };
-
-
-
-    // get api
-    const fetchBookLanguages = async () => {
-        try {
-            const response = await fetch(`${BaseURL}/api/language/book-languages`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            setBookLanguages(data.data);
-        } catch (error) {
-            console.error('Error fetching book languages:', error);
-        }
-    };
-
-
     //pagination function
     const [currentPage, setCurrentPage] = useState(1);
     const perPage = 8;
     const totalPages = Math.ceil(filtered.length / perPage);
-
     const handleNextPage = () => {
         setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
     };
-
     const handlePrevPage = () => {
         setCurrentPage(prevPage => Math.max(prevPage - 1, 1));
     };
-
-    // First and last page navigation functions
     const handleFirstPage = () => {
         setCurrentPage(1);
     };
-
     const handleLastPage = () => {
         setCurrentPage(totalPages);
     };
-
     const indexOfLastBookType = currentPage * perPage;
     const indexOfNumber = indexOfLastBookType - perPage;
     const currentData = filtered.slice(indexOfNumber, indexOfLastBookType);
-
-
 
     return (
         <div className="main-content">
@@ -312,16 +311,11 @@ const Books = () => {
 
                 <div className='mt-3'>
                     <div className="table-responsive table-height">
-
                         <Table striped bordered hover>
                             <thead>
                                 <tr>
                                     <th>Sr.No</th>
                                     <th>Book</th>
-                                    {/* <th>Author</th>
-                                <th>Publication</th>
-                                <th>Book Type</th>
-                                <th>Lang</th> */}
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -330,10 +324,6 @@ const Books = () => {
                                     <tr key={book.bookId}>
                                         <td>{indexOfNumber + index + 1}</td>
                                         <td>{book.bookName}</td>
-                                        {/* <td>{book.authorIdF.authorName}</td>
-                                    <td>{book.publicationIdF.publicationName}</td>
-                                    <td>{book.bookTypeIdF.bookTypeName}</td>
-                                    <td>{book.bookLangIdF.bookLangName}</td> */}
                                         <td>
                                             <PencilSquare className="ms-3 action-icon edit-icon" onClick={() => {
                                                 setSelectedBookId(book.bookId);
@@ -355,7 +345,6 @@ const Books = () => {
                             </tbody>
                         </Table>
                     </div>
-
                     <div className="pagination-container">
                         <Button onClick={handleFirstPage} disabled={currentPage === 1}>First Page</Button>
                         <Button onClick={handlePrevPage} disabled={currentPage === 1}> <ChevronLeft /></Button>
@@ -408,8 +397,6 @@ const Books = () => {
                                     ))}
                                 </Form.Select>
                             </Form.Group>
-
-
                             <Form.Group className="mb-3" controlId="newBookPublication">
                                 <Form.Label>Book Type</Form.Label>
                                 <Form.Select
@@ -423,7 +410,6 @@ const Books = () => {
                                     ))}
                                 </Form.Select>
                             </Form.Group>
-
                             <Form.Group className="mb-3" controlId="newBookPublication">
                                 <Form.Label>Languages</Form.Label>
                                 <Form.Select
@@ -503,7 +489,6 @@ const Books = () => {
                                     ))}
                                 </Form.Select>
                             </Form.Group>
-
                             <Form.Group className="mb-3" controlId="newBookPublication">
                                 <Form.Label>Languages</Form.Label>
                                 <Form.Select

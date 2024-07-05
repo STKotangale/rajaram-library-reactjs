@@ -12,7 +12,7 @@ const Config = () => {
     const { accessToken } = useAuth();
     const BaseURL = process.env.REACT_APP_BASE_URL;
     const [showModal, setShowModal] = useState(false);
-    const [selectedFee, setSelectedFee] = useState(null); // Changed from selectedConfig to selectedFee
+    const [selectedFee, setSelectedFee] = useState(null); 
 
     // Fetch config data from API
     const fetchConfig = async () => {

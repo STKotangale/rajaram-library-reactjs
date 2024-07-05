@@ -7,16 +7,15 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const BookAuthor = () => {
+    //search
     const [filtered, setFiltered] = useState([]);
     const [dataQuery, setDataQuery] = useState("");
-
     useEffect(() => {
         setFiltered(bookAuthors.filter(member =>
             member.authorName.toLowerCase().includes(dataQuery.toLowerCase())
         ));
-        setCurrentPage(1); 
+        setCurrentPage(1);
     }, [dataQuery]);
-
     //get
     const [bookAuthors, setBookAuthors] = useState([]);
     //add
@@ -45,7 +44,7 @@ const BookAuthor = () => {
         fetchBookAuthors();
     }, []);
 
-    //get api
+    //get book author
     const fetchBookAuthors = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/book-authors`, {
@@ -76,6 +75,7 @@ const BookAuthor = () => {
             emailId: ''
         });
     };
+
     //add or post api
     const addBookAuthor = async (e) => {
         e.preventDefault();
@@ -88,17 +88,20 @@ const BookAuthor = () => {
                 },
                 body: JSON.stringify(newBookAuthor),
             });
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`Error adding book author: ${response.statusText}`);
+                if (response.status === 409) {
+                    toast.info(`Cannot add author: ${responseData.message}`);
+                    return;
+                }
+                throw new Error(`Error adding author: ${responseData.message || response.statusText}`);
             }
-            const newAuthor = await response.json();
-            setBookAuthors([...bookAuthors, newAuthor.data]);
+            setBookAuthors([...bookAuthors, responseData.data]);
             setShowAddBookAuthorModal(false);
             toast.success('Book author added successfully.');
             resetFormFields();
             fetchBookAuthors();
         } catch (error) {
-            console.error(error);
             toast.error('Error adding book author. Please try again later.');
         }
     };
@@ -115,13 +118,17 @@ const BookAuthor = () => {
                 },
                 body: JSON.stringify(newBookAuthor),
             });
+            const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`Error editing book author: ${response.statusText}`);
+                if (response.status === 409) {
+                    toast.info(`Cannot edit book: ${responseData.message}`);
+                    return;
+                }
+                throw new Error(`Error editing book: ${responseData.message || response.statusText}`);
             }
-            const updatedAuthorData = await response.json();
             const updatedAuthors = bookAuthors.map(author => {
                 if (author.id === selectedBookAuthorId) {
-                    return updatedAuthorData.data;
+                    return responseData.data;
                 }
                 return author;
             });
@@ -136,9 +143,7 @@ const BookAuthor = () => {
             });
             toast.success('Book author edited successfully.');
             fetchBookAuthors();
-
         } catch (error) {
-            console.error(error);
             toast.error('Error editing book author. Please try again later.');
         }
     };
@@ -166,7 +171,7 @@ const BookAuthor = () => {
 
         } catch (error) {
             console.error(error);
-            toast.error(error.message ||  'Error deleting book author. Please try again later.');
+            toast.info(error.message || 'Error deleting book author. Please try again later.');
         }
     };
 
@@ -176,12 +181,10 @@ const BookAuthor = () => {
         setShowViewModal(true);
     };
 
-
     //pagination function
     const [currentPage, setCurrentPage] = useState(1);
     const perPage = 8;
     const totalPages = Math.ceil(filtered.length / perPage);
-
     const handleNextPage = () => {
         setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
     };
@@ -189,26 +192,21 @@ const BookAuthor = () => {
     const handlePrevPage = () => {
         setCurrentPage(prevPage => Math.max(prevPage - 1, 1));
     };
-
-    // First and last page navigation functions
     const handleFirstPage = () => {
         setCurrentPage(1);
     };
-
     const handleLastPage = () => {
         setCurrentPage(totalPages);
     };
-
     const indexOfLastBookType = currentPage * perPage;
     const indexOfNumber = indexOfLastBookType - perPage;
     const currentData = filtered.slice(indexOfNumber, indexOfLastBookType);
-
 
     return (
         <div className="main-content">
 
             <Container className='small-screen-table'>
-            <div className='mt-3 d-flex justify-content-between'>
+                <div className='mt-3 d-flex justify-content-between'>
                     <Button onClick={() => setShowAddBookAuthorModal(true)} className="button-color">
                         Add Book Author
                     </Button>
@@ -222,7 +220,6 @@ const BookAuthor = () => {
                         />
                     </div>
                 </div>
-
                 <div className='mt-3'>
                     <div className="table-responsive table-height">
                         <Table striped bordered hover>
@@ -278,7 +275,7 @@ const BookAuthor = () => {
 
 
                 {/* Add Book Author Modal */}
-                <Modal show={showAddBookAuthorModal} onHide={() => {setShowAddBookAuthorModal(false); resetFormFields()}}>
+                <Modal show={showAddBookAuthorModal} onHide={() => { setShowAddBookAuthorModal(false); resetFormFields() }}>
                     <Modal.Header closeButton>
                         <Modal.Title>Add New Book Author</Modal.Title>
                     </Modal.Header>
@@ -309,6 +306,8 @@ const BookAuthor = () => {
                                     type="tel"
                                     placeholder="Contact number 1"
                                     value={newBookAuthor.contactNo1}
+                                    maxLength={10}
+                                    pattern="\d{10}"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (value.length <= 10 && /^\d*$/.test(value)) {
@@ -323,6 +322,8 @@ const BookAuthor = () => {
                                     type="tel"
                                     placeholder="Contact number 2"
                                     value={newBookAuthor.contactNo2}
+                                    maxLength={10}
+                                    pattern="\d{10}"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (value.length <= 10 && /^\d*$/.test(value)) {
@@ -381,6 +382,8 @@ const BookAuthor = () => {
                                     type="tel"
                                     placeholder="Contact number 1"
                                     value={newBookAuthor.contactNo1}
+                                    maxLength={10}
+                                    pattern="\d{10}"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (value.length <= 10 && /^\d*$/.test(value)) {
@@ -394,8 +397,10 @@ const BookAuthor = () => {
                                 <Form.Label>Contact No 2</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Contact number"
+                                    placeholder="Contact number 2"
                                     value={newBookAuthor.contactNo2}
+                                    maxLength={10}
+                                    pattern="\d{10}"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (value.length <= 10 && /^\d*$/.test(value)) {
@@ -404,7 +409,6 @@ const BookAuthor = () => {
                                     }}
                                 />
                             </Form.Group>
-
                             <Form.Group className="mb-3" controlId="editBookAuthoremailId">
                                 <Form.Label>Email</Form.Label>
                                 <Form.Control
