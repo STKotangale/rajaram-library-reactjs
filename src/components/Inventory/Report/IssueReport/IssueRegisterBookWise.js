@@ -54,6 +54,7 @@ const IssueRegisterBookWise = () => {
         event.preventDefault();
         const reportData = {
             bookId: bookId,
+            bookname: bookname,
             startDate: formatDate(startDate),
             endDate: formatDate(endDate),
         };
