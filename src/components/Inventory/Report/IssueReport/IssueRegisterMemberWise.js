@@ -64,6 +64,7 @@ const IssueRegisterMemberWise = () => {
             startDate: formatDate(startDate),
             endDate: formatDate(endDate),
             memberId: memberIdToSend,
+            selectedMember: selectedMember,
         };
         setShowModal(true);
         setIsLoading(true);
