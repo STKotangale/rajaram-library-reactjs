@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
     window.location.href = '/'; 
   };
 
+
   return (
     <AuthContext.Provider value={{ ...authState, login, logout }}>
       {children}

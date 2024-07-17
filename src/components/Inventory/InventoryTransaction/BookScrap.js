@@ -7,6 +7,7 @@ import { useAuth } from '../../Auth/AuthProvider';
 import '../InventoryTransaction/CSS/Purchase.css';
 import { useNavigate } from 'react-router-dom';
 
+
 // date format
 const formatDateToDDMMYYYY = (dateStr) => {
     const date = new Date(dateStr);
@@ -59,7 +60,7 @@ const BookScrap = () => {
         fetchLatestBookScrapNo();
     }, [username, accessToken]);
 
-    // get session dates
+    //session date
     const fetchSessionDate = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/session/current-year-info`, {

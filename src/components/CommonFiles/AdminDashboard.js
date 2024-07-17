@@ -21,6 +21,8 @@ import PurchaseReturn from '../Inventory/InventoryTransaction/PurchaseReturn';
 import BookLost from '../Inventory/InventoryTransaction/BookLost';
 import BookScrap from '../Inventory/InventoryTransaction/BookScrap';
 import BookDetailsTable from '../Inventory/InventoryTransaction/BookDetailsTable';
+import IssueRenew from '../Inventory/InventoryTransaction/IssueRenew';
+
 //accession report
 import Accession from '../Inventory/Report/AccessionReports/Accession';
 import AccessionStatus from '../Inventory/Report/AccessionReports/AccessionStatus';
@@ -59,6 +61,7 @@ const componentMapping = {
     //inventory transaction
     issue: Issue,
     issueReturn: IssueReturn,
+    issueRenew: IssueRenew,
     purchase: ViewPurchase,
     purchaseReturn: PurchaseReturn,
     bookLost: BookLost,
@@ -249,6 +252,9 @@ const AdminDashboard = () => {
                                             </ListGroup.Item>
                                             <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('issueReturn'); setShowSidebar(false); }}>
                                                 <ArrowReturnLeft className="me-2 icon" /> Issue Return
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('issueRenew'); setShowSidebar(false); }}>
+                                                <ArrowReturnLeft className="me-2 icon" /> Issue Renew
                                             </ListGroup.Item>
                                             <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('purchase'); setShowSidebar(false); }}>
                                                 <CartPlus className="icon me-2" /> Purchase
