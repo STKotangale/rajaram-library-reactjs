@@ -38,7 +38,7 @@ const BookIssue = () => {
     const [memberBookings, setMemberBookings] = useState([]);
     //post
     const [showAddModal, setShowAddModal] = useState(false);
-    const [rows, setRows] = useState(Array.from({ length: 5 }, () => ({ bookId: '', bookName: '', accessionNo: '' })));
+    const [rows, setRows] = useState(Array.from({ length: 5 }, () => ({ bookId: '', bookName: '', accessionNo: ''})));
     const [issueNumber, setIssueNumber] = useState('');
     const [issueDate, setIssueDate] = useState(new Date().toISOString().substr(0, 10));
     const [selectedMemberName, setSelectedMemberName] = useState('');
@@ -68,7 +68,6 @@ const BookIssue = () => {
     const BaseURL = process.env.REACT_APP_BASE_URL;
 
     useEffect(() => {
-        // fetchIssue();
         fetchGeneralMembers();
         fetchBookDetails();
         fetchLatestIssueNo();
@@ -101,7 +100,7 @@ const BookIssue = () => {
         }
     };
 
-    //hit api for getting date in "session"  also hit api for select start and end dates
+
     const fetchStartDateEndDate = async (sessionFromDt, currentDate) => {
         try {
             const response = await fetch(`${BaseURL}/api/issue/all?startDate=${sessionFromDt}&endDate=${currentDate}`, {
@@ -127,9 +126,11 @@ const BookIssue = () => {
             const data = responseData.data;
             const updatedData = data.map(issueItem => ({
                 ...issueItem,
-                fullName: `${issueItem.firstName} ${issueItem.middleName} ${issueItem.lastName}`
+                fullName: `${issueItem.firstName} ${issueItem.middleName} ${issueItem.lastName}`,
+                returnDate: issueItem.returnDate
             }));
             setIssue(updatedData || []);
+
         } catch (error) {
             console.error('Error fetching issues:', error);
             toast.error('Error fetching issues. Please try again later.');
@@ -188,7 +189,7 @@ const BookIssue = () => {
             const data = await response.json();
             setGeneralMember(data.data.map(member => ({
                 ...member,
-                fullName: `${member.firstName} ${member.middleName} ${member.lastName}`
+                fullName: `${member.firstName} ${member.middleName} ${member.lastName}`,
             })));
         } catch (error) {
             console.error("Failed to fetch general members:", error);
@@ -243,7 +244,6 @@ const BookIssue = () => {
         )).values()];
         setAllBookDetails(combinedBooks);
     }, [bookDetails, memberBookings]);
-
 
     //date change for add modal
     const handleDateChange = async (e) => {
@@ -321,30 +321,81 @@ const BookIssue = () => {
         }
     };
 
-    //accession no change and update book name auto
+    const [errorMessages, setErrorMessages] = useState({});
+    const [selectedAccessionNos, setSelectedAccessionNos] = useState({});
+
     const handleAccessionInputChange = (index, event) => {
         const updatedRows = [...rows];
         const accessionNo = event.target.value;
         const matchingBook = bookDetails.find(book =>
             book.copyDetails.some(detail => detail.accessionNo === accessionNo)
         );
+
+        const updatedErrorMessages = { ...errorMessages };
+        const updatedSelectedAccessionNos = { ...selectedAccessionNos };
+
         if (matchingBook) {
             const matchingDetail = matchingBook.copyDetails.find(detail => detail.accessionNo === accessionNo);
-            updatedRows[index] = {
-                accessionNo: accessionNo,
-                bookId: matchingBook.bookId,
-                bookName: matchingBook.bookName,
-                bookDetailId: matchingDetail.bookDetailId
-            };
+
+            // Check if the book is already issued
+            const isAlreadyIssued = issue.some(issueItem =>
+                issueItem.books && issueItem.books.some(book => book.accessionNo === accessionNo)
+            );
+
+            // Check if the accession number is already selected in other rows
+            const isAlreadySelected = Object.values(updatedSelectedAccessionNos).includes(accessionNo);
+
+            if (isAlreadyIssued) {
+                updatedErrorMessages[index] = `Book with accession number ${accessionNo} is already issued.`;
+                updatedRows[index] = {
+                    accessionNo: accessionNo,
+                    bookId: '',
+                    bookName: '',
+                    bookDetailId: ''
+                };
+                delete updatedSelectedAccessionNos[index];
+            } else if (isAlreadySelected) {
+                updatedErrorMessages[index] = `Accession number ${accessionNo} is already selected.`;
+                updatedRows[index] = {
+                    accessionNo: accessionNo,
+                    bookId: '',
+                    bookName: '',
+                    bookDetailId: ''
+                };
+                delete updatedSelectedAccessionNos[index];
+            } else {
+                updatedErrorMessages[index] = '';
+                updatedRows[index] = {
+                    accessionNo: accessionNo,
+                    bookId: matchingBook.bookId,
+                    bookName: matchingBook.bookName,
+                    bookDetailId: matchingDetail.bookDetailId,
+                };
+                updatedSelectedAccessionNos[index] = accessionNo;
+            }
         } else {
+            updatedErrorMessages[index] = `Book with accession number ${accessionNo} is not found in the library.`;
             updatedRows[index] = {
                 accessionNo: accessionNo,
                 bookId: '',
                 bookName: '',
                 bookDetailId: ''
             };
+            delete updatedSelectedAccessionNos[index];
         }
+
         setRows(updatedRows);
+        setErrorMessages(updatedErrorMessages);
+        setSelectedAccessionNos(updatedSelectedAccessionNos);
+    };
+
+    const getFilteredAccessionNumbers = (index) => {
+        // Get all the selected accession numbers except for the current row
+        const selectedAccessionNos = rows.map((row, i) => i !== index && row.accessionNo).filter(Boolean);
+        // Filter out the selected accession numbers from the available options
+        return bookDetails.flatMap(book =>
+            book.copyDetails.filter(detail => !selectedAccessionNos.includes(detail.accessionNo))
+        );
     };
 
     const addRowAdd = () => {
@@ -381,10 +432,11 @@ const BookIssue = () => {
             });
             return;
         }
-        
+
         const validRows = rows.filter(row => row.accessionNo);
-        if (validRows.length === 0) {
-            toast.error("Please select or enter at least one accession number.");
+
+        if (validRows.length < 1 || validRows.length > 3) {
+            toast.error("Please select at least one and at most three accession numbers.");
             return;
         }
 
@@ -454,12 +506,9 @@ const BookIssue = () => {
             if (!response.ok) {
                 const errorData = await response.json();
                 toast.error(`Error updating block status: ${errorData.message}`);
-            } else {
-                // toast.success('Block status updated successfully.');
             }
         } catch (error) {
             console.error('Error updating block status:', error);
-            // toast.error('Error updating block status. Please try again.');
         }
     };
 
@@ -530,7 +579,6 @@ const BookIssue = () => {
                 throw new Error('Failed to fetch issue details');
             }
             const data = await response.json();
-            // setViewDetails(data[0]);
             const updatedData = {
                 ...data[0],
                 fullName: `${data[0].firstName} ${data[0].middleName} ${data[0].lastName}`
@@ -540,6 +588,8 @@ const BookIssue = () => {
             console.error(error);
         }
     };
+
+
 
     //view
     const handleViewClick = (issue) => {
@@ -568,7 +618,6 @@ const BookIssue = () => {
     const indexOfNumber = indexOfLastBookType - perPage;
     const currentData = issue.slice(indexOfNumber, indexOfLastBookType);
 
-
     return (
         <div className="main-content">
             <Container className='small-screen-table'>
@@ -593,7 +642,7 @@ const BookIssue = () => {
                                     type="date"
                                     value={endDate}
                                     onChange={handleEndDateChange}
-                                    min={startDate} 
+                                    min={startDate}
                                     className="custom-date-picker small-input border"
                                 />
                             </InputGroup>
@@ -611,6 +660,7 @@ const BookIssue = () => {
                                     <th>Member Name</th>
                                     <th>Issue No</th>
                                     <th>Issue Date</th>
+                                    <th>Return Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -621,6 +671,7 @@ const BookIssue = () => {
                                         <td>{issueItem.fullName}</td>
                                         <td>{issueItem.invoiceNo}</td>
                                         <td>{issueItem.invoiceDate}</td>
+                                        <td>{issueItem.returnDate}</td>
                                         <td>
                                             <Eye className="action-icon view-icon" onClick={() => handleViewClick(issueItem)} />
                                             <Trash className="ms-3 action-icon delete-icon" onClick={() => handleDeleteClick(issueItem)} />
@@ -668,6 +719,14 @@ const BookIssue = () => {
                                         className="custom-date-picker small-input"
                                     />
                                 </Form.Group>
+                                {/* <Form.Group as={Col}>
+                                    <Form.Label>Return Date</Form.Label>
+                                    <Form.Control
+                                        value={returnDate}
+                                        className="custom-date-picker small-input"
+                                        onChange={(e) => setReturnDate(e.target.value)} // Handle date changes
+                                    />
+                                </Form.Group> */}
                             </Row>
                             <Row className="mb-3">
                                 <Form.Group as={Col}>
@@ -706,6 +765,7 @@ const BookIssue = () => {
                                             <th className='sr-size'>Sr. No.</th>
                                             <th>Accession No</th>
                                             <th>Book Name</th>
+                                            {/* <th>Return Date</th> */}
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -715,19 +775,18 @@ const BookIssue = () => {
                                                 <td className='sr-size'>{index + 1}</td>
                                                 <td>
                                                     <Form.Control
-                                                        list={bookDetails.length > 0 ? `accessionNumbers-${index}` : undefined}
+                                                        list={`accessionNumbers-${index}`}
                                                         value={row.accessionNo}
                                                         onChange={(e) => handleAccessionInputChange(index, e)}
-                                                        placeholder={bookDetails.length > 0 ? "Enter or Select Accession Number" : "No Accession Numbers Available"}
+                                                        placeholder="Enter or Select Accession Number"
                                                     />
-                                                    {bookDetails.length > 0 && (
-                                                        <datalist id={`accessionNumbers-${index}`}>
-                                                            {bookDetails.flatMap(book =>
-                                                                book.copyDetails.map(detail => (
-                                                                    <option key={detail.bookDetailId} value={detail.accessionNo} />
-                                                                ))
-                                                            )}
-                                                        </datalist>
+                                                    <datalist id={`accessionNumbers-${index}`}>
+                                                        {getFilteredAccessionNumbers(index).map(detail => (
+                                                            <option key={detail.bookDetailId} value={detail.accessionNo} />
+                                                        ))}
+                                                    </datalist>
+                                                    {errorMessages[index] && (
+                                                        <div className="text-danger mt-1">{errorMessages[index]}</div>
                                                     )}
                                                 </td>
                                                 <td>
@@ -739,6 +798,16 @@ const BookIssue = () => {
                                                         />
                                                     </Form.Group>
                                                 </td>
+                                                {/* <td>
+                                                    <Form.Group as={Col}>
+                                                        <Form.Control
+                                                            type="text"
+                                                            value={row.returnDate ? formatDateToDDMMYYYY(row.returnDate) : ''} // Format the returnDate
+                                                            className="custom-date-picker small-input"
+                                                            readOnly
+                                                        />
+                                                    </Form.Group>
+                                                </td> */}
                                                 <td>
                                                     <Trash className="ms-3 action-icon delete-icon" onClick={() => deleteRowAdd(index)} />
                                                 </td>
@@ -812,6 +881,7 @@ const BookIssue = () => {
                                                 <th className='sr-size'>Sr. No.</th>
                                                 <th>Book Name</th>
                                                 <th>Accession No</th>
+                                                {/* <th>Return Date</th> */}
                                             </tr>
                                         </thead>
                                         <tbody>
