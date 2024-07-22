@@ -25,46 +25,35 @@ const formatDate = (dateStr) => {
     return `${year}-${month}-${day}`;
 };
 
-
 const BookIssue = () => {
-    //get all issue
     const [issue, setIssue] = useState([]);
-    //get general member
     const [generalMember, setGeneralMember] = useState([]);
     const [selectedMemberId, setSelectedMemberId] = useState("");
-    //get book details in copy no only updated (updated book details)
     const [bookDetails, setBookDetails] = useState([]);
-    //get member name for online booking data
     const [memberBookings, setMemberBookings] = useState([]);
-    //post
     const [showAddModal, setShowAddModal] = useState(false);
     const [rows, setRows] = useState(Array.from({ length: 5 }, () => ({ bookId: '', bookName: '', accessionNo: ''})));
     const [issueNumber, setIssueNumber] = useState('');
     const [issueDate, setIssueDate] = useState(new Date().toISOString().substr(0, 10));
     const [selectedMemberName, setSelectedMemberName] = useState('');
     const [selectedMemberLibNo, setSelectedMemberLibNo] = useState('');
-    //check membership 
     const [isMembershipValid, setIsMembershipValid] = useState(false);
     const [membershipChecked, setMembershipChecked] = useState(false);
-    //show error message
     const [errorMessage, setErrorMessage] = useState('');
-    //all book details combine
     const [allBookDetails, setAllBookDetails] = useState([]);
-    //delete
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [issueToDelete, setIssueToDelete] = useState(null);
-    //get view data
     const [viewDetails, setViewDetails] = useState(null);
-    //view
     const [showViewModal, setShowViewModal] = useState(false);
     const [selectedIssue, setSelectedIssue] = useState(null);
-    //start date and end date
     const [sessionStartDate, setSessionStartDate] = useState(null);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState(formatDateToDDMMYYYY());
-    //auth
-    const navigate = useNavigate();
+    const [errorMessages, setErrorMessages] = useState({});
+    const [selectedAccessionNos, setSelectedAccessionNos] = useState({});
+    const [currentPage, setCurrentPage] = useState(1);
     const { username, accessToken, logout } = useAuth();
+    const navigate = useNavigate();
     const BaseURL = process.env.REACT_APP_BASE_URL;
 
     useEffect(() => {
@@ -74,8 +63,6 @@ const BookIssue = () => {
         fetchSessionDate();
     }, [username, accessToken]);
 
-
-    //get session dates
     const fetchSessionDate = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/session/current-year-info`, {
@@ -99,7 +86,6 @@ const BookIssue = () => {
             toast.error('Error fetching session date. Please try again later.');
         }
     };
-
 
     const fetchStartDateEndDate = async (sessionFromDt, currentDate) => {
         try {
@@ -140,23 +126,22 @@ const BookIssue = () => {
         }
     };
 
-    //select start and end dates
     const handleStartDateChange = (e) => {
         const newStartDate = e.target.value;
         setStartDate(newStartDate);
     };
+
     const handleEndDateChange = (e) => {
         const newEndDate = e.target.value;
         setEndDate(newEndDate);
     };
-    //search 
+
     const handleSearchClick = () => {
         const formattedStartDate = formatDateToDDMMYYYY(new Date(startDate));
         const formattedEndDate = formatDateToDDMMYYYY(new Date(endDate));
         fetchStartDateEndDate(formattedStartDate, formattedEndDate);
     };
 
-    //get Issue  No number
     const fetchLatestIssueNo = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/stock/latest-issueNo`, {
@@ -175,7 +160,6 @@ const BookIssue = () => {
         }
     };
 
-    //get general member
     const fetchGeneralMembers = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/general-members`, {
@@ -197,7 +181,6 @@ const BookIssue = () => {
         }
     };
 
-    //get book details is updated with accession number
     const fetchBookDetails = async () => {
         try {
             const response = await fetch(`${BaseURL}/api/bookdetails/copyno`, {
@@ -216,7 +199,6 @@ const BookIssue = () => {
         }
     };
 
-    //online booking with accession number or without accession number 
     const fetchBookingDetails = async (memberId) => {
         try {
             const response = await fetch(`${BaseURL}/api/member-bookings/bookings/${memberId}`, {
@@ -245,7 +227,6 @@ const BookIssue = () => {
         setAllBookDetails(combinedBooks);
     }, [bookDetails, memberBookings]);
 
-    //date change for add modal
     const handleDateChange = async (e) => {
         const newDate = e.target.value;
         setIssueDate(newDate);
@@ -262,7 +243,6 @@ const BookIssue = () => {
         }
     };
 
-    //member change
     const handleMemberChange = async (e) => {
         const fullName = e.target.value;
         setSelectedMemberName(fullName);
@@ -289,14 +269,12 @@ const BookIssue = () => {
         }
     };
 
-    //date format
     const formatDateForPayload = (date) => {
         if (!date) return '';
         const [year, month, day] = date.split('-');
         return `${day}-${month}-${year}`;
     };
 
-    //get and valid membership check
     const checkMembershipFees = async (memberId, date) => {
         try {
             const formattedDate = formatDateForPayload(date);
@@ -321,36 +299,79 @@ const BookIssue = () => {
         }
     };
 
-    const [errorMessages, setErrorMessages] = useState({});
-    const [selectedAccessionNos, setSelectedAccessionNos] = useState({});
-
-    const handleAccessionInputChange = (index, event) => {
+    const handleAccessionInputChange = async (index, event) => {
         const updatedRows = [...rows];
         const accessionNo = event.target.value;
+        const updatedErrorMessages = { ...errorMessages };
+        const updatedSelectedAccessionNos = { ...selectedAccessionNos };
+    
+        // API call to check if the book is already issued
+        try {
+            const response = await fetch(`${BaseURL}/api/stock/find?accessionNo=${accessionNo}`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            const data = await response.json();
+    
+            if (data.success) {
+                const memberName = `${data.data.firstName} ${data.data.middleName} ${data.data.lastName}`;
+                updatedErrorMessages[index] = `Book already issued to ${memberName}`;
+                updatedRows[index] = {
+                    accessionNo: accessionNo,
+                    bookId: '',
+                    // bookName: `Book already issued to ${memberName}`,
+                    bookName:'',
+                    bookDetailId: ''
+                };
+                setRows(updatedRows);
+                setErrorMessages(updatedErrorMessages);
+                return;
+            }
+        } catch (error) {
+            console.error('Error fetching book details:', error);
+            toast.error('Error fetching book details. Please try again later.');
+        }
+    
         const matchingBook = bookDetails.find(book =>
             book.copyDetails.some(detail => detail.accessionNo === accessionNo)
         );
-
-        const updatedErrorMessages = { ...errorMessages };
-        const updatedSelectedAccessionNos = { ...selectedAccessionNos };
-
+    
+        // Check if more than 3 books are selected
+        const validRows = rows.filter(row => row.accessionNo);
+        if (validRows.length >= 3 && !updatedSelectedAccessionNos[index]) {
+            const bookName = matchingBook ? matchingBook.bookName : " ";
+            updatedErrorMessages[index] = `One Member can issue only 3 books not more than that.`;
+            updatedRows[index] = {
+                accessionNo: accessionNo,
+                bookId: '',
+                bookName: bookName,
+                bookDetailId: ''
+            };
+            delete updatedSelectedAccessionNos[index];
+            setRows(updatedRows);
+            setErrorMessages(updatedErrorMessages);
+            setSelectedAccessionNos(updatedSelectedAccessionNos);
+            return;
+        }
+    
         if (matchingBook) {
             const matchingDetail = matchingBook.copyDetails.find(detail => detail.accessionNo === accessionNo);
-
+    
             // Check if the book is already issued
             const isAlreadyIssued = issue.some(issueItem =>
                 issueItem.books && issueItem.books.some(book => book.accessionNo === accessionNo)
             );
-
+    
             // Check if the accession number is already selected in other rows
             const isAlreadySelected = Object.values(updatedSelectedAccessionNos).includes(accessionNo);
-
+    
             if (isAlreadyIssued) {
                 updatedErrorMessages[index] = `Book with accession number ${accessionNo} is already issued.`;
                 updatedRows[index] = {
                     accessionNo: accessionNo,
                     bookId: '',
-                    bookName: '',
+                    bookName: matchingBook.bookName,
                     bookDetailId: ''
                 };
                 delete updatedSelectedAccessionNos[index];
@@ -359,7 +380,7 @@ const BookIssue = () => {
                 updatedRows[index] = {
                     accessionNo: accessionNo,
                     bookId: '',
-                    bookName: '',
+                    bookName: matchingBook.bookName,
                     bookDetailId: ''
                 };
                 delete updatedSelectedAccessionNos[index];
@@ -383,16 +404,16 @@ const BookIssue = () => {
             };
             delete updatedSelectedAccessionNos[index];
         }
-
+    
         setRows(updatedRows);
         setErrorMessages(updatedErrorMessages);
         setSelectedAccessionNos(updatedSelectedAccessionNos);
     };
+    
 
+    
     const getFilteredAccessionNumbers = (index) => {
-        // Get all the selected accession numbers except for the current row
         const selectedAccessionNos = rows.map((row, i) => i !== index && row.accessionNo).filter(Boolean);
-        // Filter out the selected accession numbers from the available options
         return bookDetails.flatMap(book =>
             book.copyDetails.filter(detail => !selectedAccessionNos.includes(detail.accessionNo))
         );
@@ -415,9 +436,10 @@ const BookIssue = () => {
         setMembershipChecked(false);
         setErrorMessage('');
         setMemberBookings([]);
+        setErrorMessages({});
+        setSelectedAccessionNos({});
     };
 
-    //post
     const handleSubmit = async (event) => {
         event.preventDefault();
         if (!selectedMemberName) {
@@ -433,12 +455,11 @@ const BookIssue = () => {
             return;
         }
 
-        const validRows = rows.filter(row => row.accessionNo);
-
-        if (validRows.length < 1 || validRows.length > 3) {
-            toast.error("Please select at least one and at most three accession numbers.");
-            return;
-        }
+        // const validRows = rows.filter(row => row.accessionNo);
+        // if (validRows.length < 1 || validRows.length > 3) {
+        //     toast.error("Please select at least one and at most three accession numbers.");
+        //     return;
+        // }
 
         if (!isMembershipValid) {
             return;
@@ -479,7 +500,7 @@ const BookIssue = () => {
                 setShowAddModal(false);
                 resetFormFields();
                 fetchStartDateEndDate(sessionStartDate.sessionFromDt, sessionStartDate.currentDate);
-                fetchBookDetails();//copyno
+                fetchBookDetails();
                 fetchLatestIssueNo();
             } else {
                 const errorData = await response.json();
@@ -491,7 +512,6 @@ const BookIssue = () => {
         }
     };
 
-    // update api block status change
     const updateBlockStatus = async (membOnlineIds) => {
         try {
             const response = await fetch(`${BaseURL}/api/member-bookings/update-block-status`, {
@@ -512,13 +532,11 @@ const BookIssue = () => {
         }
     };
 
-    //delete function
     const handleDeleteClick = (issue) => {
         setIssueToDelete(issue);
         setShowDeleteModal(true);
     };
 
-    //delete api
     const handleDeleteConfirm = async () => {
         if (!issueToDelete) return;
         try {
@@ -555,7 +573,7 @@ const BookIssue = () => {
                 toast.success('Issue deleted successfully.');
                 setShowDeleteModal(false);
                 fetchStartDateEndDate(sessionStartDate.sessionFromDt, sessionStartDate.currentDate);
-                fetchBookDetails();//copyno
+                fetchBookDetails();
                 fetchLatestIssueNo();
             } else {
                 const errorData = await deleteResponse.json();
@@ -567,7 +585,6 @@ const BookIssue = () => {
         }
     };
 
-    // View purchase
     const fetchViewDetails = async (stockId) => {
         try {
             const response = await fetch(`${BaseURL}/api/issue/book-issue/${stockId}`, {
@@ -589,17 +606,12 @@ const BookIssue = () => {
         }
     };
 
-
-
-    //view
     const handleViewClick = (issue) => {
         setSelectedIssue(issue);
         fetchViewDetails(issue.stock_id);
         setShowViewModal(true);
     };
 
-    //pagination function
-    const [currentPage, setCurrentPage] = useState(1);
     const perPage = 8;
     const totalPages = Math.ceil(issue.length / perPage);
     const handleNextPage = () => {
@@ -691,7 +703,6 @@ const BookIssue = () => {
                 </div>
             </Container>
 
-            {/* add modal */}
             <Modal centered show={showAddModal} onHide={() => { setShowAddModal(false); resetFormFields() }} size='xl'>
                 <div className="bg-light">
                     <Modal.Header closeButton>
@@ -719,14 +730,6 @@ const BookIssue = () => {
                                         className="custom-date-picker small-input"
                                     />
                                 </Form.Group>
-                                {/* <Form.Group as={Col}>
-                                    <Form.Label>Return Date</Form.Label>
-                                    <Form.Control
-                                        value={returnDate}
-                                        className="custom-date-picker small-input"
-                                        onChange={(e) => setReturnDate(e.target.value)} // Handle date changes
-                                    />
-                                </Form.Group> */}
                             </Row>
                             <Row className="mb-3">
                                 <Form.Group as={Col}>
@@ -765,7 +768,6 @@ const BookIssue = () => {
                                             <th className='sr-size'>Sr. No.</th>
                                             <th>Accession No</th>
                                             <th>Book Name</th>
-                                            {/* <th>Return Date</th> */}
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -798,16 +800,6 @@ const BookIssue = () => {
                                                         />
                                                     </Form.Group>
                                                 </td>
-                                                {/* <td>
-                                                    <Form.Group as={Col}>
-                                                        <Form.Control
-                                                            type="text"
-                                                            value={row.returnDate ? formatDateToDDMMYYYY(row.returnDate) : ''} // Format the returnDate
-                                                            className="custom-date-picker small-input"
-                                                            readOnly
-                                                        />
-                                                    </Form.Group>
-                                                </td> */}
                                                 <td>
                                                     <Trash className="ms-3 action-icon delete-icon" onClick={() => deleteRowAdd(index)} />
                                                 </td>
@@ -823,7 +815,7 @@ const BookIssue = () => {
                         </Form>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowAddModal(false)}>
+                        <Button variant="secondary" onClick={() => { setShowAddModal(false); resetFormFields() }}>
                             Close
                         </Button>
                         <Button className='button-color' onClick={handleSubmit}>
@@ -833,7 +825,6 @@ const BookIssue = () => {
                 </div>
             </Modal>
 
-            {/* view modal */}
             <Modal centered show={showViewModal} onHide={() => setShowViewModal(false)} size='xl'>
                 <div className="bg-light">
                     <Modal.Header closeButton>
@@ -881,7 +872,6 @@ const BookIssue = () => {
                                                 <th className='sr-size'>Sr. No.</th>
                                                 <th>Book Name</th>
                                                 <th>Accession No</th>
-                                                {/* <th>Return Date</th> */}
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -920,7 +910,6 @@ const BookIssue = () => {
                 </div>
             </Modal>
 
-            {/* delete modal */}
             <Modal centered show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
                 <div className="bg-light">
                     <Modal.Header closeButton>

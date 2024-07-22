@@ -27,6 +27,8 @@ const formatDate = (dateStr) => {
 };
 
 
+
+
 const IssueRenew = () => {
     //get 
     const [issueReturn, setIssueReturn] = useState([]);
@@ -259,6 +261,7 @@ const IssueRenew = () => {
                     finePerDays: item.finePerDays,
                     fineDays: item.fineDays,
                     fineAmount: item.fineAmount,
+                    exactReturnDate: item.exactReturnDate,
                     fineManuallyChanged: false,
                 }));
                 setRows(bookRows);
@@ -599,6 +602,7 @@ const IssueRenew = () => {
                                                 <th>Book Name</th>
                                                 <th>Accession No</th>
                                                 <th>Issue Date</th>
+                                                <th>Book Return Date</th>
                                                 <th>Fine Per Day</th>
                                                 <th>Total Day</th>
                                                 <th>Extra Day</th>
@@ -613,6 +617,7 @@ const IssueRenew = () => {
                                                     <td>{row.bookName}</td>
                                                     <td>{row.accessionNo}</td>
                                                     <td>{row.invoiceDate}</td>
+                                                    <td>{row.exactReturnDate}</td>
                                                     <td>
                                                         <input
                                                             type="number"
