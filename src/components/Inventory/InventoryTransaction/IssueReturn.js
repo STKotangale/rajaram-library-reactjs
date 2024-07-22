@@ -27,6 +27,7 @@ const formatDate = (dateStr) => {
 };
 
 
+
 const IssueReturn = () => {
     //get 
     const [issueReturn, setIssueReturn] = useState([]);
@@ -259,6 +260,7 @@ const IssueReturn = () => {
                     finePerDays: item.finePerDays,
                     fineDays: item.fineDays,
                     fineAmount: item.fineAmount,
+                    exactReturnDate: item.exactReturnDate,
                     fineManuallyChanged: false,
                 }));
                 setRows(bookRows);
@@ -457,7 +459,7 @@ const IssueReturn = () => {
                                     type="date"
                                     value={endDate}
                                     onChange={handleEndDateChange}
-                                    min={startDate} 
+                                    min={startDate}
                                     className="custom-date-picker small-input border"
                                 />
                             </InputGroup>
@@ -503,6 +505,7 @@ const IssueReturn = () => {
                 </div>
             </Container>
 
+            {/* add modal */}
             <Modal centered show={showAddModal} onHide={() => { setShowAddModal(false); resetFormFields() }} size='xl'>
                 <div className="bg-light">
                     <Modal.Header closeButton>
@@ -570,6 +573,7 @@ const IssueReturn = () => {
                                                 <th>Book Name</th>
                                                 <th>Accession No</th>
                                                 <th>Issue Date</th>
+                                                <th>Book Return Date</th>
                                                 <th>Fine Per Day</th>
                                                 <th>Total Day</th>
                                                 <th>Extra Day</th>
@@ -584,6 +588,7 @@ const IssueReturn = () => {
                                                     <td>{row.bookName}</td>
                                                     <td>{row.accessionNo}</td>
                                                     <td>{row.invoiceDate}</td>
+                                                    <td>{row.exactReturnDate}</td>
                                                     <td>
                                                         <input
                                                             type="number"
