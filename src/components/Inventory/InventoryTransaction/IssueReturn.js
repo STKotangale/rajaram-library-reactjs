@@ -632,6 +632,7 @@ const IssueReturn = () => {
                                                 <td>Total</td>
                                                 <td>{calculateTotal().toFixed(2)}</td>
                                                 <td></td>
+                                                <td></td>
                                             </tr>
                                         </tbody>
                                     </Table>
@@ -712,6 +713,7 @@ const IssueReturn = () => {
                                             <th>Book Name</th>
                                             <th>Accession No</th>
                                             <th>Issue Date</th>
+                                            <th>Book Return Date</th>
                                             <th>Fine Per Day</th>
                                             <th>Fine Days</th>
                                             <th>Fine Amount</th>
@@ -724,6 +726,7 @@ const IssueReturn = () => {
                                                 <td>{detail.BookName}</td>
                                                 <td>{detail.AcessionNo}</td>
                                                 <td>{detail.issuedate}</td>
+                                                <td>{detail.exactReturnDate}</td>
                                                 <td>{detail.finePerDays}</td>
                                                 <td>{detail.fineDays}</td>
                                                 <td>{detail.fineAmount}</td>
@@ -737,6 +740,7 @@ const IssueReturn = () => {
                                             <td></td>
                                             <td>Total</td>
                                             <td>{calculateDetailTotal()}</td>
+                                            <td></td>
                                         </tr>
                                     </tbody>
                                 </Table>

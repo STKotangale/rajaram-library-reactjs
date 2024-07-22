@@ -347,7 +347,7 @@ const BookLost = () => {
         setShowDeleteModal(true);
     };
 
-    // delete api
+    //delete api
     const confirmDelete = async () => {
         if (!deleteStockId) return;
         const selectedGroup = bookLost.find(item => item.stockId === deleteStockId);
@@ -355,12 +355,7 @@ const BookLost = () => {
             toast.error('No book details found for this stock.');
             return;
         }
-
-        // Ensure bookDetails is an array before mapping over it
-        const bookDetailIds = Array.isArray(selectedGroup.bookDetails)
-            ? selectedGroup.bookDetails.map(item => item.bookDetailId)
-            : [];
-
+        const bookDetailIds = selectedGroup.bookDetails.map(item => item.bookDetailId);
         try {
             const postResponse = await fetch(`${BaseURL}/api/bookdetails/update-status-book-lost`, {
                 method: 'POST',
@@ -716,7 +711,7 @@ const BookLost = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {Array.isArray(selectedRowDetails.bookDetails) && selectedRowDetails.bookDetails.map((row, index) => (
+                                            {selectedRowDetails.bookDetails.map((row, index) => (
                                                 <tr key={index}>
                                                     <td className='sr-size'>{index + 1}</td>
                                                     <td>
@@ -768,14 +763,14 @@ const BookLost = () => {
                                             </tr>
                                             <tr>
                                                 <td></td>
-                                                <td></td>
                                                 <td className="right-align">Total After Discount</td>
+                                                <td></td>
                                                 <td className="amount-align">{selectedRowDetails.totalAfterDiscount !== undefined ? selectedRowDetails.totalAfterDiscount.toFixed(2) : '0.00'}</td>
                                             </tr>
                                             <tr>
                                                 <td></td>
-                                                <td></td>
                                                 <td className="right-align">Grand Total</td>
+                                                <td></td>
                                                 <td className="amount-align">{selectedRowDetails.grandTotal !== undefined ? selectedRowDetails.grandTotal : '0'}</td>
                                             </tr>
                                         </tbody>

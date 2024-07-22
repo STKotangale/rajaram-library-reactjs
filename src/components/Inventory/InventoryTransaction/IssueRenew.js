@@ -161,7 +161,7 @@ const IssueRenew = () => {
     //get issue return number
     const fetchLatestIssueReturnNo = async () => {
         try {
-            const response = await fetch(`${BaseURL}/api/stock/latest-issueReturnNo`, {
+            const response = await fetch(`${BaseURL}/api/stock/latest-issueNo`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
