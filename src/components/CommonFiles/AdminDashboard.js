@@ -30,12 +30,35 @@ import BookTypeWiseReport from '../Inventory/Report/AccessionReports/BookTypeWis
 import BookLanguageReport from '../Inventory/Report/AccessionReports/BookLanguageReport';
 import BookAuthorWiseReport from '../Inventory/Report/AccessionReports/BookAuthorWiseReport';
 import BookPublicationWiseReport from '../Inventory/Report/AccessionReports/BookPublicationWiseReport';
+
 //issue report
 import IssueRegister from '../Inventory/Report/IssueReport/IssueRegister';
 import IssueRegisterMemberWise from '../Inventory/Report/IssueReport/IssueRegisterMemberWise';
 import IssueRegisterBookWise from '../Inventory/Report/IssueReport/IssueRegisterBookWise';
 
-//master
+//issue return report
+import IssueReturnRegister from '../Inventory/Report/IssueReturnReport/IssueReturnRegister';
+import IssueReturnRegisterMemberWise from '../Inventory/Report/IssueReturnReport/IssueReturnRegisterMemberWise';
+import IssueReturnRegisterBookWise from '../Inventory/Report/IssueReturnReport/IssueReturnRegisterBookWise';
+
+//Book Lost report
+import BookLostRegister from '../Inventory/Report/BookLost/BookLostRegister';
+
+//Book Scrap report
+import BookScrapRegister from '../Inventory/Report/BookScrap/BookScrapRegister';
+
+//Book Renew report
+import BookRenewRegister from '../Inventory/Report/BookRenew/BookRenewRegister';
+
+//Book Purchase report
+import PurchaseRegister from '../Inventory/Report/Purchase/PurchaseRegister';
+import PurchaseLedgerWiseRegister from '../Inventory/Report/Purchase/PurchaseLedgerWiseRegister';
+
+
+//Book Purchase Return report
+import PurchaseReturnRegister from '../Inventory/Report/PurchaseReturn/PurchaseReturnRegister';
+import PurchaseReturnLedgerWiseRegister from '../Inventory/Report/PurchaseReturn/PurchaseReturnLedgerWiseRegister';
+
 import Books from '../Inventory/InventoryMaster/Books';
 import BookLanguages from '../Inventory/InventoryMaster/BookLanguages';
 import BookTypes from '../Inventory/InventoryMaster/BookTypes';
@@ -67,6 +90,7 @@ const componentMapping = {
     bookLost: BookLost,
     bookScrap: BookScrap,
     bookDetails: BookDetailsTable,
+    
     //accession report
     accessionReport: Accession,
     accessionStatusReport: AccessionStatus,
@@ -74,11 +98,35 @@ const componentMapping = {
     bookLanguageWiseReport: BookLanguageReport,
     bookAuthorWiseReport: BookAuthorWiseReport,
     bookPublicationWiseReport: BookPublicationWiseReport,
+
     //issue register report
     issueRegisterMemberWise: IssueRegisterMemberWise,
     issueRegisterBookWise: IssueRegisterBookWise,
     issueRegisterDateWise: IssueRegister,
 
+    //issue return register report
+    issueReturnRegisterDateWise: IssueReturnRegister,
+    issueReturnRegisterMemberWise: IssueReturnRegisterMemberWise,
+    issueReturnRegisterBookWise: IssueReturnRegisterBookWise,
+    
+    //issue Lost register report
+    bookLostReportDateWise: BookLostRegister,
+    
+    //issue Scrap register report
+    bookScrapReportDateWise: BookScrapRegister,
+    
+    //issue Renew register report
+    bookRenewReportDateWise: BookRenewRegister,
+    
+    //Purchase register report
+    purchaseReportDateWise: PurchaseRegister,
+    purchaseReportPurchaserWiseDateWise: PurchaseLedgerWiseRegister,
+
+    //Purchase Return register report
+    purchaseReturnReportDateWise: PurchaseReturnRegister,
+    purchaseReturnPurchaserWiseDateWise: PurchaseReturnLedgerWiseRegister,
+    
+    
     //inventory master
     books: Books,
     bookLanguages: BookLanguages,
@@ -112,7 +160,14 @@ const AdminDashboard = () => {
     const [showInventoryTransactionReportSubItems, setShowInventoryTransactionReportSubItems] = useState(false);
     const [showInventoryTransactionIssueReportSubItems, setShowInventoryTransactionIssueReportSubItems] = useState(false);
     const [showInventoryTransactionAccessionReportSubItems, setShowInventoryTransactionAccessionReportSubItems] = useState(false);
+    const [showInventoryTransactionIssueReturnReportSubItems, setShowInventoryTransactionIssueReturnReportSubItems] = useState(false);
+    const [showBookLostReportSubItems, setShowBookLostReportSubItems] = useState(false);
+    const [showBookScrapReportSubItems, setShowBookScrapReportSubItems] = useState(false);
+    const [showBookRenewReportSubItems, setShowBookRenewReportSubItems] = useState(false);
+    const [showPurchaseReportSubItems, setShowPurchaseReportSubItems] = useState(false);
+    const [showPurchaseReturnReportSubItems, setShowPurchaseReturnReportSubItems] = useState(false);
 
+    
     //master
     const [showInventoryMasterSubItems, setShowInventoryMasterSubItems] = useState(false);
     //master report
@@ -322,6 +377,90 @@ const AdminDashboard = () => {
                                                     </ListGroup.Item>
                                                 </div>
                                             )}
+
+                                            <ListGroup.Item className="sub-icon mt-2" action onClick={() => setShowInventoryTransactionIssueReturnReportSubItems(!showInventoryTransactionIssueReturnReportSubItems)}>
+                                                <PlusCircle className="icon me-2" /> Issue Return Rep <ChevronDown />
+                                            </ListGroup.Item>
+                                            {showInventoryTransactionIssueReturnReportSubItems && (
+                                                <div>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('issueReturnRegisterDateWise'); setShowSidebar(false); }}>
+                                                        <DateRangeOutlined className="icon me-2" /> Date Wise Register
+                                                    </ListGroup.Item>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('issueReturnRegisterMemberWise'); setShowSidebar(false); }}>
+                                                        <PersonCircle className="icon me-2" /> Member Register
+                                                    </ListGroup.Item>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('issueReturnRegisterBookWise'); setShowSidebar(false); }}>
+                                                        <Book className="icon me-2" /> Book Wise Register
+                                                    </ListGroup.Item>
+                                                </div>
+                                            )}
+
+                                            <ListGroup.Item className="sub-icon mt-2" action onClick={() => setShowBookLostReportSubItems(!showBookLostReportSubItems)}>
+                                                <PlusCircle className="icon me-2" /> Book Lost Report <ChevronDown />
+                                            </ListGroup.Item>
+                                            {showBookLostReportSubItems && (
+                                                <div>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('bookLostReportDateWise'); setShowSidebar(false); }}>
+                                                        <DateRangeOutlined className="icon me-2" /> Date Wise Register
+                                                    </ListGroup.Item>
+                                                </div>
+                                            )}
+
+                                            <ListGroup.Item className="sub-icon mt-2" action onClick={() => setShowBookScrapReportSubItems(!showBookScrapReportSubItems)}>
+                                                <PlusCircle className="icon me-2" /> Book Scrap Rep <ChevronDown />
+                                            </ListGroup.Item>
+                                            {showBookScrapReportSubItems && (
+                                                <div>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('bookScrapReportDateWise'); setShowSidebar(false); }}>
+                                                        <DateRangeOutlined className="icon me-2" /> Date Wise Register
+                                                    </ListGroup.Item>
+                                                </div>
+                                            )}
+
+
+                                            <ListGroup.Item className="sub-icon mt-2" action onClick={() => setShowBookRenewReportSubItems(!showBookRenewReportSubItems)}>
+                                                <PlusCircle className="icon me-2" /> Book Renew Rep <ChevronDown />
+                                            </ListGroup.Item>
+                                            {showBookRenewReportSubItems && (
+                                                <div>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('bookRenewReportDateWise'); setShowSidebar(false); }}>
+                                                        <DateRangeOutlined className="icon me-2" /> Date Wise Register
+                                                    </ListGroup.Item>
+                                                </div>
+                                            )}
+
+                                            <ListGroup.Item className="sub-icon mt-2" action onClick={() => setShowPurchaseReportSubItems(!showPurchaseReportSubItems)}>
+                                                <PlusCircle className="icon me-2" /> Purchase Rep <ChevronDown />
+                                            </ListGroup.Item>
+                                            {showPurchaseReportSubItems && (
+                                                <div>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('purchaseReportDateWise'); setShowSidebar(false); }}>
+                                                        <DateRangeOutlined className="icon me-2" /> Date Wise Register
+                                                    </ListGroup.Item>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('purchaseReportPurchaserWiseDateWise'); setShowSidebar(false); }}>
+                                                        <PersonCircle className="icon me-2" /> Purchaser Wise
+                                                    </ListGroup.Item>
+                                                </div>
+                                                
+                                            )}
+
+                                            <ListGroup.Item className="sub-icon mt-2" action onClick={() => setShowPurchaseReturnReportSubItems(!showPurchaseReturnReportSubItems)}>
+                                                <PlusCircle className="icon me-2" /> Purchase Return <ChevronDown />
+                                            </ListGroup.Item>
+                                            {showPurchaseReturnReportSubItems && (
+                                                <div>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('purchaseReturnReportDateWise'); setShowSidebar(false); }}>
+                                                        <DateRangeOutlined className="icon me-2" /> Date Wise Register
+                                                    </ListGroup.Item>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('purchaseReturnPurchaserWiseDateWise'); setShowSidebar(false); }}>
+                                                        <PersonCircle className="icon me-2" /> Purchaser Wise
+                                                    </ListGroup.Item>
+                                                </div>
+                                            )}
+
+
+
+
                                         </div>
                                     )}
 
