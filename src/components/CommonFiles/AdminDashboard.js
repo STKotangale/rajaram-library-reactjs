@@ -54,10 +54,13 @@ import BookRenewRegister from '../Inventory/Report/BookRenew/BookRenewRegister';
 import PurchaseRegister from '../Inventory/Report/Purchase/PurchaseRegister';
 import PurchaseLedgerWiseRegister from '../Inventory/Report/Purchase/PurchaseLedgerWiseRegister';
 
-
 //Book Purchase Return report
 import PurchaseReturnRegister from '../Inventory/Report/PurchaseReturn/PurchaseReturnRegister';
 import PurchaseReturnLedgerWiseRegister from '../Inventory/Report/PurchaseReturn/PurchaseReturnLedgerWiseRegister';
+
+//Book Issue Fine report
+import IssueFineRegister from '../Inventory/Report//BookFine/IssueFineRegister';
+import IssueFineRegisterMemberWise from '../Inventory/Report//BookFine/IssueFineRegisterMemberWise';
 
 import Books from '../Inventory/InventoryMaster/Books';
 import BookLanguages from '../Inventory/InventoryMaster/BookLanguages';
@@ -126,6 +129,10 @@ const componentMapping = {
     purchaseReturnReportDateWise: PurchaseReturnRegister,
     purchaseReturnPurchaserWiseDateWise: PurchaseReturnLedgerWiseRegister,
     
+    //Purchase Return register report
+    issueFineReportDateWise: IssueFineRegister,
+    issueFineReportMemberDateWise: IssueFineRegisterMemberWise,
+    
     
     //inventory master
     books: Books,
@@ -166,6 +173,7 @@ const AdminDashboard = () => {
     const [showBookRenewReportSubItems, setShowBookRenewReportSubItems] = useState(false);
     const [showPurchaseReportSubItems, setShowPurchaseReportSubItems] = useState(false);
     const [showPurchaseReturnReportSubItems, setShowPurchaseReturnReportSubItems] = useState(false);
+    const [showIssueFineReportSubItems, setShowIssueFineReportSubItems] = useState(false);
 
     
     //master
@@ -458,7 +466,19 @@ const AdminDashboard = () => {
                                                 </div>
                                             )}
 
-
+                                            <ListGroup.Item className="sub-icon mt-2" action onClick={() => setShowIssueFineReportSubItems(!showIssueFineReportSubItems)}>
+                                                <PlusCircle className="icon me-2" /> Issue Fine <ChevronDown />
+                                            </ListGroup.Item>
+                                            {showIssueFineReportSubItems && (
+                                                <div>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('issueFineReportDateWise'); setShowSidebar(false); }}>
+                                                        <DateRangeOutlined className="icon me-2" /> Date Wise Register
+                                                    </ListGroup.Item>
+                                                    <ListGroup.Item className="sub-icon mt-1" action onClick={() => { setViewState('issueFineReportMemberDateWise'); setShowSidebar(false); }}>
+                                                        <PersonCircle className="icon me-2" /> Member Register
+                                                    </ListGroup.Item>
+                                                </div>
+                                            )}
 
 
                                         </div>
