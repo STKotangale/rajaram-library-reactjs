@@ -42,7 +42,6 @@ import BookTypes from '../Inventory/InventoryMaster/BookTypes';
 import BookAuthor from '../Inventory/InventoryMaster/BookAuthor';
 import BookPublication from '../Inventory/InventoryMaster/BookPublication';
 
-
 //account
 import Purchaser from '../Inventory/InventoryAccount/Purchaser';
 import MembershipFees from '../Inventory/InventoryAccount/MembershipFees';
@@ -55,6 +54,9 @@ import User from '../Auth/User';
 import PermanentMember from '../Auth/PermanentMember';
 import GeneralMember from '../Auth/GeneralMember';
 import { DateRangeOutlined } from '@material-ui/icons';
+
+//search page
+import SearchPage from '../Inventory/Search';
 
 const componentMapping = {
     home: DashboardData,
@@ -97,6 +99,9 @@ const componentMapping = {
     user: User,
     permanentMember: PermanentMember,
     generalMember: GeneralMember,
+
+    //search page
+    searchPage: SearchPage,
 };
 
 const AdminDashboard = () => {
@@ -141,8 +146,6 @@ const AdminDashboard = () => {
         setShowSidebar(!showSidebar);
     };
 
-
-
     useEffect(() => {
         function handleClickOutside(event) {
             if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -156,14 +159,12 @@ const AdminDashboard = () => {
         };
     }, []);
 
-
     const resetFormFields = () => {
         setCredentials({
             password: '',
             confirmPassword: ''
         });
     };
-
 
     //change password
     const handleChange = (event) => {
@@ -225,7 +226,6 @@ const AdminDashboard = () => {
             .join(' ');
     };
 
-
     return (
         <div className='main-dashboard-member'>
             <div ref={sidebarRef} className={`sidebar-admin ${showSidebar ? 'active' : ''}`}>
@@ -278,9 +278,8 @@ const AdminDashboard = () => {
                                         <Archive className="icon me-2" /> Transaction Report
                                     </ListGroup.Item>
                                     {showInventoryTransactionReportSubItems && (
-
                                         <div className='ms-2'>
-                                            <ListGroup.Item className="sub-icon mt-2" action onClick={() => { setShowInventoryTransactionAccessionReportSubItems(!showInventoryTransactionAccessionReportSubItems) }}>
+                                            <ListGroup.Item className="sub-icon mt-2" action onClick={() => setShowInventoryTransactionAccessionReportSubItems(!showInventoryTransactionAccessionReportSubItems)}>
                                                 <PlusCircle className="icon me-2" />Accession Report <ChevronDown />
                                             </ListGroup.Item>
                                             {showInventoryTransactionAccessionReportSubItems && (
@@ -305,7 +304,6 @@ const AdminDashboard = () => {
                                                     </ListGroup.Item>
                                                 </div>
                                             )}
-
                                             <ListGroup.Item className="sub-icon mt-2" action onClick={() => setShowInventoryTransactionIssueReportSubItems(!showInventoryTransactionIssueReportSubItems)}>
                                                 <PlusCircle className="icon me-2" /> Issue Report <ChevronDown />
                                             </ListGroup.Item>
@@ -324,7 +322,6 @@ const AdminDashboard = () => {
                                             )}
                                         </div>
                                     )}
-
 
                                     <ListGroup.Item className="admin-general-icon mt-3" action onClick={() => setShowInventoryMasterSubItems(!showInventoryMasterSubItems)}>
                                         <Archive className="icon me-2" /> Inventory Master
@@ -367,9 +364,6 @@ const AdminDashboard = () => {
                                                     </ListGroup.Item>
                                                 </div>
                                             )} */}
-
-
-
                                         </div>
                                     )}
 
@@ -396,13 +390,11 @@ const AdminDashboard = () => {
                                         </div>
                                     )}
 
-
                                     <ListGroup.Item className="admin-general-icon mt-3" action onClick={() => setShowAccountReportSubItems(!showAccountReportSubItems)}>
                                         <Archive className="icon me-2" /> Account Report
                                     </ListGroup.Item>
                                     {showAccountReportSubItems && (
                                         <div className='ms-2'>
-
                                         </div>
                                     )}
 
@@ -428,9 +420,12 @@ const AdminDashboard = () => {
                                     </ListGroup.Item>
                                     {showAdminReportSubItems && (
                                         <div className='ms-2'>
-
                                         </div>
                                     )}
+
+                                    <ListGroup.Item className="admin-general-icon mt-3 mb-3" action onClick={() => { setViewState('searchPage'); setShowSidebar(false); }}>
+                                        <Archive className="icon me-2" /> Search Page
+                                    </ListGroup.Item>
 
                                 </Col>
                             </ListGroup>
@@ -439,16 +434,13 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-
             <div className='dashboard-member-page-details'>
                 <Navbar className="mb-4 border-bottom navabar-color dashboard-member-navabar">
                     <div className="sidebar-toggle d-md-none color-black mt-1" onClick={toggleSidebar}>
                         ☰
                     </div>
                     <Nav className="ms-4 mt-2">
-                        {/* <div className="selected-item">{viewState}</div> */}
                         <div className="selected-item">{formatViewState(viewState)}</div>
-
                     </Nav>
                     <Navbar.Toggle aria-controls="basic-navbar-nav " />
                     <Navbar.Collapse id="basic-navbar-nav">
@@ -472,9 +464,7 @@ const AdminDashboard = () => {
                 <Container fluid className="d-flex flex-column justify-content-between admin-main-content">
                     {ComponentToRender && <ComponentToRender />}
                 </Container>
-
             </div>
-
 
             <Modal show={showChangePasswordModal} onHide={() => { setShowChangePasswordModal(false); resetFormFields() }}>
                 <Modal.Header closeButton>
