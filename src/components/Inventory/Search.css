@@ -16,9 +16,11 @@
   background-color: #4e90fe;
   border: none;
   color: white;
-  padding: 10px 15px;
+  padding: 10px;
   margin: 0 5px;
   cursor: pointer;
+  height: 40px;
+  width: auto;
 }
 
 .pagination-container button:disabled {
@@ -28,4 +30,9 @@
 
 .pagination-container span {
   margin: 0 10px;
+}
+
+.my-4 {
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
 }

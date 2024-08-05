@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown, Button, Form, Table, Pagination, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../Auth/AuthProvider';
-import '../Inventory/Search.css'; // Import custom CSS
+import './Search.css'; // Import custom CSS
 
 const SearchDropdown = () => {
   const [selectedType, setSelectedType] = useState('Select search type');
@@ -73,7 +73,7 @@ const SearchDropdown = () => {
 
   return (
     <div>
-      <Row className="align-items-center mb-3">
+      <Row className="align-items-center my-4">
         <Col xs="auto">
           <Dropdown>
             <Dropdown.Toggle variant="secondary" id="dropdown-basic" className="dropdown-transparent">
@@ -108,11 +108,10 @@ const SearchDropdown = () => {
         </Col>
       </Row>
 
-      <Table striped bordered hover>
+      <Table striped bordered hover className='mt-1 table-responsive table-height'>
         <thead>
           <tr>
             <th>SR No</th>
-            <th>Book ID</th>
             <th>Book Name</th>
             <th>Author Name</th>
             <th>Language</th>
@@ -129,7 +128,6 @@ const SearchDropdown = () => {
           {currentItems.map((item, index) => (
             <tr key={item.bookDetailId}>
               <td>{indexOfFirstItem + index + 1}</td>
-              <td>{item.bookIdF}</td>
               <td>{item.bookName}</td>
               <td>{item.authorName}</td>
               <td>{item.bookLangName}</td>
@@ -145,7 +143,7 @@ const SearchDropdown = () => {
         </tbody>
       </Table>
 
-      <div className="pagination-container">
+      <div className="pagination-container mt-5">
         <Button onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
           First Page
         </Button>
