@@ -348,7 +348,7 @@ const PurchaseReturn = () => {
             toast.error('No book details found for this stock.');
             return;
         }
-        const bookDetailIds = selectedGroup.books.map(item => item.stockDetailId);
+        const bookDetailIds = selectedGroup.books.map(item => item.bookDetailId);
         try {
             const postResponse = await fetch(`${BaseURL}/api/bookdetails/update-status-purchase-return`, {
                 method: 'POST',
