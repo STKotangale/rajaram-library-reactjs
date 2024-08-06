@@ -679,7 +679,7 @@ const BookIssue = () => {
                             <tbody>
                                 {currentData.map((issueItem, index) => (
                                     <tr key={issueItem.stock_id}>
-                                        <td>{index + 1}</td>
+                                        <td>{indexOfNumber + index + 1}</td>
                                         <td>{issueItem.fullName}</td>
                                         <td>{issueItem.invoiceNo}</td>
                                         <td>{issueItem.invoiceDate}</td>
