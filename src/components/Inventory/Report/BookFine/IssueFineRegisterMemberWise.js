@@ -122,7 +122,7 @@ const IssueFineRegisterMemberWise = () => {
                 <div className="centered-form">
                     <Container>
                         <div className="form-header">
-                            <h2>Member Wise Register</h2>
+                            <h2>Issue Fine Member Wise Register</h2>
                         </div>
                         <Form onSubmit={handleSubmit}>
                             <Row className="mb-3">
@@ -177,7 +177,7 @@ const IssueFineRegisterMemberWise = () => {
 
             <Modal show={showModal} onHide={handleCloseModal} size="xl">
                 <Modal.Header closeButton>
-                    <Modal.Title className="flex-grow-1">Issue Member Wise Report</Modal.Title>
+                    <Modal.Title className="flex-grow-1">Issue Fine Member Wise Report</Modal.Title>
                     <Button variant="info" onClick={handleDownloadPDF} className="me-2" disabled={!pdfUrl}>
                         <Download /> Download PDF
                     </Button>
