@@ -305,6 +305,10 @@ const AdminDashboard = () => {
                                         <HouseDoorFill className="icon" /> Home
                                     </ListGroup.Item>
 
+                                    <ListGroup.Item className="admin-general-icon mt-3 mb-3" action onClick={() => { setViewState('searchPage'); setShowSidebar(false); }}>
+                                        <Archive className="icon me-2" /> Search Page
+                                    </ListGroup.Item>
+
                                     <ListGroup.Item className="admin-general-icon mt-2" action onClick={() => setShowInventoryTransactionSubItems(!showInventoryTransactionSubItems)}>
                                         <Archive className="icon me-2" /> Inventory Transaction
                                     </ListGroup.Item>
@@ -581,10 +585,6 @@ const AdminDashboard = () => {
                                         <div className='ms-2'>
                                         </div>
                                     )}
-
-                                    <ListGroup.Item className="admin-general-icon mt-3 mb-3" action onClick={() => { setViewState('searchPage'); setShowSidebar(false); }}>
-                                        <Archive className="icon me-2" /> Search Page
-                                    </ListGroup.Item>
 
                                 </Col>
                             </ListGroup>
