@@ -111,12 +111,12 @@ const SearchDropdown = () => {
       <Table striped bordered hover className='mt-1 table-responsive table-height'>
         <thead>
           <tr>
-            <th>SR No</th>
+            <th>Sr.No</th>
             <th>Book Name</th>
             <th>Author Name</th>
             <th>Language</th>
             <th>Publication</th>
-            <th>Type</th>
+            <th>Book Type</th>
             <th>Working Start</th>
             <th>Lost</th>
             <th>Issue</th>
