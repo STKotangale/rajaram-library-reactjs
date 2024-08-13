@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Dropdown, Button, Form, Table, Pagination, Row, Col } from 'react-bootstrap';
+import { Dropdown, Button, Form, Table, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../Auth/AuthProvider';
 import './Search.css'; // Import custom CSS
+import _ from 'lodash';
 
 const SearchDropdown = () => {
   const [selectedType, setSelectedType] = useState('Select search type');
@@ -12,29 +13,44 @@ const SearchDropdown = () => {
   const itemsPerPage = 8;
   const { accessToken } = useAuth();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_BASE_URL}/api/bookdetails/search`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        const data = await response.json();
-        setBookData(data);
-        setFilteredData(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+  const fetchData = async () => {
+    try {
+      if (searchValue.trim() === '') {
+        setFilteredData([]);
+        return;
       }
-    };
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/api/bookdetails/search`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = await response.json();
+      setBookData(data);
+      setFilteredData(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-    fetchData();
-  }, [accessToken]);
+  useEffect(() => {
+    const debouncedFetchData = _.debounce(() => {
+      fetchData();
+    }, 300);
+
+    if (searchValue.trim() !== '') {
+      debouncedFetchData();
+    }
+
+    // Cleanup the debounce on unmount
+    return () => {
+      debouncedFetchData.cancel();
+    };
+  }, [searchValue, selectedType, accessToken]);
 
   useEffect(() => {
     const filterData = () => {
       if (searchValue.trim() === '') {
-        setFilteredData(bookData);
+        setFilteredData([]);
         return;
       }
 
@@ -108,56 +124,68 @@ const SearchDropdown = () => {
         </Col>
       </Row>
 
-      <Table striped bordered hover className='mt-1 table-responsive table-height'>
-        <thead>
-          <tr>
-            <th>Sr.No</th>
-            <th>Book Name</th>
-            <th>Author Name</th>
-            <th>Language</th>
-            <th>Publication</th>
-            <th>Book Type</th>
-            <th>Working Start</th>
-            <th>Lost</th>
-            <th>Issue</th>
-            <th>Scrap</th>
-            <th>Return</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentItems.map((item, index) => (
-            <tr key={item.bookDetailId}>
-              <td>{indexOfFirstItem + index + 1}</td>
-              <td>{item.bookName}</td>
-              <td>{item.authorName}</td>
-              <td>{item.bookLangName}</td>
-              <td>{item.publicationName}</td>
-              <td>{item.bookTypeName}</td>
-              <td>{formatYesNo(item.bookWorkingStart)}</td>
-              <td>{formatYesNo(item.bookLost)}</td>
-              <td>{formatYesNo(item.bookIssue)}</td>
-              <td>{formatYesNo(item.bookScrap)}</td>
-              <td>{formatYesNo(item.book_return)}</td>
+      <div className="table-responsive table-height">
+        <Table striped bordered hover className='mt-1 table-responsive '>
+          <thead>
+            <tr>
+              <th>Sr.No</th>
+              <th>Book Name</th>
+              <th>Author Name</th>
+              <th>Language</th>
+              <th>Publication</th>
+              <th>Book Type</th>
+              <th>Working Start</th>
+              <th>Lost</th>
+              <th>Issue</th>
+              <th>Scrap</th>
+              <th>Return</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      <div className="pagination-container mt-5">
-        <Button onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
-          First Page
-        </Button>
-        <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-          &lt;
-        </Button>
-        <span>Page {currentPage} of {totalPages}</span>
-        <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
-          &gt;
-        </Button>
-        <Button onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>
-          Last Page
-        </Button>
+          </thead>
+          <tbody>
+            {currentItems.length > 0 ? (
+              currentItems.map((item, index) => (
+                <tr key={item.bookDetailId}>
+                  <td>{indexOfFirstItem + index + 1}</td>
+                  <td>{item.bookName}</td>
+                  <td>{item.authorName}</td>
+                  <td>{item.bookLangName}</td>
+                  <td>{item.publicationName}</td>
+                  <td>{item.bookTypeName}</td>
+                  <td>{formatYesNo(item.bookWorkingStart)}</td>
+                  <td>{formatYesNo(item.bookLost)}</td>
+                  <td>{formatYesNo(item.bookIssue)}</td>
+                  <td>{formatYesNo(item.bookScrap)}</td>
+                  <td>{formatYesNo(item.book_return)}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="11" className="text-center">
+                  No data available
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination-container mt-5">
+          <Button onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
+            First Page
+          </Button>
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+            &lt;
+          </Button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+            &gt;
+          </Button>
+          <Button onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>
+            Last Page
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
