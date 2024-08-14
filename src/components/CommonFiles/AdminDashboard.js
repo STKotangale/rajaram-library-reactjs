@@ -229,6 +229,40 @@ const AdminDashboard = () => {
         });
     };
 
+    //logout session
+
+    const [sessionResponse, setSessionResponse] = useState([]);
+    const currentYear = new Date().getFullYear(); // Get the current year
+
+    useEffect(() => {
+        fetchLoginAfterResponse();
+    }, []);
+
+    const fetchLoginAfterResponse = async () => {
+        try {
+            const response = await fetch(`${BaseURL}/api/session/check-session?year=${currentYear}`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Error fetching response: ${response.statusText}`);
+            }
+            const data = await response.json();
+            setSessionResponse(data);
+
+            // Check the message and act accordingly
+            if (data.message.includes("No session found")) {
+                navigate('/'); // Adjust the route as necessary
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Error fetching response. Please try again later.');
+        }
+    };
+
+
+
     //change password
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -309,6 +343,10 @@ const AdminDashboard = () => {
                                         <Archive className="icon me-2" /> Search Page
                                     </ListGroup.Item>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9106692d5e69f310863d74ee3bf7b87e1c815844
                                     <ListGroup.Item className="admin-general-icon mt-2" action onClick={() => setShowInventoryTransactionSubItems(!showInventoryTransactionSubItems)}>
                                         <Archive className="icon me-2" /> Inventory Transaction
                                     </ListGroup.Item>
@@ -586,6 +624,10 @@ const AdminDashboard = () => {
                                         </div>
                                     )}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9106692d5e69f310863d74ee3bf7b87e1c815844
                                 </Col>
                             </ListGroup>
                         </div>
