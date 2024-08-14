@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Dropdown, Button, Form, Table, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../Auth/AuthProvider';
 import './Search.css'; // Import custom CSS
-import _ from 'lodash';
 
 const SearchDropdown = () => {
   const [selectedType, setSelectedType] = useState('Select search type');
@@ -13,39 +12,38 @@ const SearchDropdown = () => {
   const itemsPerPage = 8;
   const { accessToken } = useAuth();
 
-  const fetchData = async () => {
+  const handleSearch = async () => {
     try {
-      if (searchValue.trim() === '') {
+      if (selectedType === 'Select search type') {
         setFilteredData([]);
         return;
       }
+
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}/api/bookdetails/search`, {
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
+        body: JSON.stringify({
+          searchType: selectedType,
+          searchValue: searchValue,
+        }),
       });
+
       const data = await response.json();
       setBookData(data);
       setFilteredData(data);
+      setCurrentPage(1); // Reset to the first page after search
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  useEffect(() => {
-    const debouncedFetchData = _.debounce(() => {
-      fetchData();
-    }, 300);
-
-    if (searchValue.trim() !== '') {
-      debouncedFetchData();
-    }
-
-    // Cleanup the debounce on unmount
-    return () => {
-      debouncedFetchData.cancel();
-    };
-  }, [searchValue, selectedType, accessToken]);
+  const handleDropdownClick = (type) => {
+    setSelectedType(type);
+    handleSearch(); // Trigger search after selecting the dropdown item
+  };
 
   useEffect(() => {
     const filterData = () => {
@@ -96,11 +94,11 @@ const SearchDropdown = () => {
               {selectedType}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item onClick={() => setSelectedType('Book Name Wise')}>Book Name Wise</Dropdown.Item>
-              <Dropdown.Item onClick={() => setSelectedType('Book Type Wise')}>Book Type Wise</Dropdown.Item>
-              <Dropdown.Item onClick={() => setSelectedType('Language Wise')}>Language Wise</Dropdown.Item>
-              <Dropdown.Item onClick={() => setSelectedType('Author Wise')}>Author Wise</Dropdown.Item>
-              <Dropdown.Item onClick={() => setSelectedType('Publication Wise')}>Publication Wise</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDropdownClick('Book Name Wise')}>Book Name Wise</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDropdownClick('Book Type Wise')}>Book Type Wise</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDropdownClick('Language Wise')}>Language Wise</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDropdownClick('Author Wise')}>Author Wise</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDropdownClick('Publication Wise')}>Publication Wise</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Col>
@@ -117,7 +115,7 @@ const SearchDropdown = () => {
           <Button
             variant="primary"
             style={{ backgroundColor: '#F27E00', borderColor: '#F27E00' }}
-            onClick={() => handlePageChange(1)}
+            onClick={handleSearch}
           >
             Search
           </Button>
