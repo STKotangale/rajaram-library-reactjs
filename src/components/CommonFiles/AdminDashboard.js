@@ -343,10 +343,6 @@ const AdminDashboard = () => {
                                         <Archive className="icon me-2" /> Search Page
                                     </ListGroup.Item>
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 9106692d5e69f310863d74ee3bf7b87e1c815844
                                     <ListGroup.Item className="admin-general-icon mt-2" action onClick={() => setShowInventoryTransactionSubItems(!showInventoryTransactionSubItems)}>
                                         <Archive className="icon me-2" /> Inventory Transaction
                                     </ListGroup.Item>
@@ -624,10 +620,6 @@ const AdminDashboard = () => {
                                         </div>
                                     )}
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 9106692d5e69f310863d74ee3bf7b87e1c815844
                                 </Col>
                             </ListGroup>
                         </div>
